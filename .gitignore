@@ -1,0 +1,24 @@
+# Binary
+cli-agent-lint
+cli-agent-lint.exe
+
+# Go
+vendor/
+*.test
+*.out
+coverage.html
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Claude Code
+CLAUDE.md
+.claude/
