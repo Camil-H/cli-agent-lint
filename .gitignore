@@ -19,8 +19,9 @@ Thumbs.db
 *.swo
 *~
 
+
 # Demo
-demo/*.tape
+demo/record.sh
 
 # Claude Code
 CLAUDE.md
