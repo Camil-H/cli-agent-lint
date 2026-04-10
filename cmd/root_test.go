@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cli-agent-lint/cli-agent-lint/output"
+	"github.com/Camil-H/cli-agent-lint/output"
 )
 
 // ---------------------------------------------------------------------------

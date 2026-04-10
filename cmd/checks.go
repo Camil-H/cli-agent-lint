@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/cli-agent-lint/cli-agent-lint/checks"
+	"github.com/Camil-H/cli-agent-lint/checks"
 )
 
 func newChecksCmd(opts *GlobalOptions) *cobra.Command {

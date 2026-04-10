@@ -1,4 +1,4 @@
-module github.com/cli-agent-lint/cli-agent-lint
+module github.com/Camil-H/cli-agent-lint
 
 go 1.25.0
 

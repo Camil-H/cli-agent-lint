@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/cli-agent-lint/cli-agent-lint/discovery"
+	"github.com/Camil-H/cli-agent-lint/discovery"
 )
 
 // FS-4: Env var auth support

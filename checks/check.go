@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/cli-agent-lint/cli-agent-lint/discovery"
-	"github.com/cli-agent-lint/cli-agent-lint/probe"
+	"github.com/Camil-H/cli-agent-lint/discovery"
+	"github.com/Camil-H/cli-agent-lint/probe"
 )
 
 // Prober is the consumer-side type alias so checks depend on the probe.Runner interface.

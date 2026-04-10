@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cli-agent-lint/cli-agent-lint/discovery"
-	"github.com/cli-agent-lint/cli-agent-lint/probe"
+	"github.com/Camil-H/cli-agent-lint/discovery"
+	"github.com/Camil-H/cli-agent-lint/probe"
 )
 
 // SA-2: Rejects path traversal

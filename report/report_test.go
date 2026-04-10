@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cli-agent-lint/cli-agent-lint/checks"
+	"github.com/Camil-H/cli-agent-lint/checks"
 )
 
 // helper to build a Result quickly.

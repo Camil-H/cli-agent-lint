@@ -6,10 +6,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cli-agent-lint/cli-agent-lint/checks"
-	"github.com/cli-agent-lint/cli-agent-lint/discovery"
-	"github.com/cli-agent-lint/cli-agent-lint/probe"
-	"github.com/cli-agent-lint/cli-agent-lint/report"
+	"github.com/Camil-H/cli-agent-lint/checks"
+	"github.com/Camil-H/cli-agent-lint/discovery"
+	"github.com/Camil-H/cli-agent-lint/probe"
+	"github.com/Camil-H/cli-agent-lint/report"
 )
 
 type Config struct {

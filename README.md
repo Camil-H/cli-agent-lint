@@ -15,7 +15,7 @@ Audit CLI tools for AI agent-readiness. Runs 30 checks across 5 categories and p
 ## Install
 
 ```bash
-go install github.com/cli-agent-lint/cli-agent-lint@latest
+go install github.com/Camil-H/cli-agent-lint@latest
 ```
 
 ## Quick start

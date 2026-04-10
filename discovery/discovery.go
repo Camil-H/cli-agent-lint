@@ -9,7 +9,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/cli-agent-lint/cli-agent-lint/probe"
+	"github.com/Camil-H/cli-agent-lint/probe"
 )
 
 // Maximum parallel --help invocations during subcommand discovery.

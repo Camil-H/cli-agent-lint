@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io"
 
-	"github.com/cli-agent-lint/cli-agent-lint/checks"
+	"github.com/Camil-H/cli-agent-lint/checks"
 )
 
 type JSONFormatter struct{}

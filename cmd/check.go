@@ -6,10 +6,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/cli-agent-lint/cli-agent-lint/checks"
-	"github.com/cli-agent-lint/cli-agent-lint/output"
-	"github.com/cli-agent-lint/cli-agent-lint/report"
-	"github.com/cli-agent-lint/cli-agent-lint/runner"
+	"github.com/Camil-H/cli-agent-lint/checks"
+	"github.com/Camil-H/cli-agent-lint/output"
+	"github.com/Camil-H/cli-agent-lint/report"
+	"github.com/Camil-H/cli-agent-lint/runner"
 )
 
 type checkFlags struct {

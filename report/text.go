@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/cli-agent-lint/cli-agent-lint/checks"
+	"github.com/Camil-H/cli-agent-lint/checks"
 )
 
 var ansiRe = regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`)

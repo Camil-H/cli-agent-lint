@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cli-agent-lint/cli-agent-lint/checks"
+	"github.com/Camil-H/cli-agent-lint/checks"
 )
 
 // goodCLIPath returns the absolute path to the good-cli.sh test fixture.

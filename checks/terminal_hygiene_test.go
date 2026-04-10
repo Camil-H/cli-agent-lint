@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cli-agent-lint/cli-agent-lint/discovery"
+	"github.com/Camil-H/cli-agent-lint/discovery"
 )
 
 // FS-2: Non-TTY detection (active check)

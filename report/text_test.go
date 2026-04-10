@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cli-agent-lint/cli-agent-lint/checks"
+	"github.com/Camil-H/cli-agent-lint/checks"
 )
 
 func buildTextReport() *Report {

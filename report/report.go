@@ -3,7 +3,7 @@ package report
 import (
 	"time"
 
-	"github.com/cli-agent-lint/cli-agent-lint/checks"
+	"github.com/Camil-H/cli-agent-lint/checks"
 )
 
 type Grade string
