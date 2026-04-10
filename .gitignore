@@ -19,6 +19,9 @@ Thumbs.db
 *.swo
 *~
 
+# Demo
+demo/*.tape
+
 # Claude Code
 CLAUDE.md
 .claude/
