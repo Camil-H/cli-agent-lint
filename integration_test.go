@@ -290,8 +290,8 @@ func TestVersionOutput(t *testing.T) {
 	}
 
 	version := strings.TrimSpace(stdout)
-	if version != "0.1.0" {
-		t.Errorf("expected version '0.1.0', got %q", version)
+	if version != "0.2.0" {
+		t.Errorf("expected version '0.2.0', got %q", version)
 	}
 
 	// Verify it is a clean semver (no extra text).
@@ -317,8 +317,8 @@ func TestJSONVersionOutput(t *testing.T) {
 		t.Fatal("JSON version output missing 'version' field")
 	}
 
-	if version != "0.1.0" {
-		t.Errorf("expected JSON version '0.1.0', got %q", version)
+	if version != "0.2.0" {
+		t.Errorf("expected JSON version '0.2.0', got %q", version)
 	}
 }
 

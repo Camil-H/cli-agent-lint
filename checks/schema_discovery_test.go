@@ -2,6 +2,7 @@ package checks
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/cli-agent-lint/cli-agent-lint/discovery"
@@ -434,6 +435,95 @@ func TestSD6_SkipNilTree(t *testing.T) {
 
 	if result.Status != StatusSkip {
 		t.Errorf("expected StatusSkip, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+// SD-7: Actionable error messages (active check)
+
+func TestSD7_SkipNilProber(t *testing.T) {
+	check := newCheckSD7()
+	result := check.Run(context.Background(), &Input{Prober: nil})
+	if result.Status != StatusSkip {
+		t.Errorf("expected skip, got %s", result.Status)
+	}
+}
+
+// SD-8: Subcommand fan-out (passive check)
+
+func TestSD8_PassFewSubcommands(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{Name: "list", FullPath: []string{"mycli", "list"}},
+			{Name: "create", FullPath: []string{"mycli", "create"}},
+			{Name: "delete", FullPath: []string{"mycli", "delete"}},
+		},
+	}
+	check := newCheckSD8()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusPass {
+		t.Errorf("expected pass for 3 subcommands, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSD8_FailTooManySubcommands(t *testing.T) {
+	subs := make([]*discovery.Command, 20)
+	for i := range subs {
+		name := fmt.Sprintf("cmd%d", i)
+		subs[i] = &discovery.Command{Name: name, FullPath: []string{"mycli", name}}
+	}
+	root := &discovery.Command{
+		Name:        "mycli",
+		FullPath:    []string{"mycli"},
+		Subcommands: subs,
+	}
+	check := newCheckSD8()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusFail {
+		t.Errorf("expected fail for 20 subcommands, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSD8_PassNoSubcommands(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+	}
+	check := newCheckSD8()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusPass {
+		t.Errorf("expected pass for no subcommands, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSD8_ChecksNestedLevels(t *testing.T) {
+	// Root has 3 subcommands, but one nested command has 20
+	bigSubs := make([]*discovery.Command, 20)
+	for i := range bigSubs {
+		name := fmt.Sprintf("sub%d", i)
+		bigSubs[i] = &discovery.Command{Name: name, FullPath: []string{"mycli", "admin", name}}
+	}
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{Name: "list", FullPath: []string{"mycli", "list"}},
+			{Name: "admin", FullPath: []string{"mycli", "admin"}, Subcommands: bigSubs},
+		},
+	}
+	check := newCheckSD8()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusFail {
+		t.Errorf("expected fail for nested 20 subcommands, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSD8_SkipNilTree(t *testing.T) {
+	check := newCheckSD8()
+	result := check.Run(context.Background(), &Input{Tree: nil})
+	if result.Status != StatusSkip {
+		t.Errorf("expected skip, got %s", result.Status)
 	}
 }
 

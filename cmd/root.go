@@ -13,7 +13,7 @@ import (
 )
 
 // Version is set at build time via ldflags.
-var Version = "0.1.0"
+var Version = "0.2.0"
 
 type GlobalOptions struct {
 	OutputFormat string
@@ -73,6 +73,8 @@ Exit Codes:
 	// Custom --version flag (not cobra's built-in, to avoid "appname version X" format).
 	rootCmd.Flags().BoolVarP(&showVersion, "version", "v", false, "Print version")
 
+	rootCmd.SuggestionsMinimumDistance = 2
+
 	rootCmd.AddCommand(newCheckCmd(opts))
 	rootCmd.AddCommand(newChecksCmd(opts))
 	rootCmd.AddCommand(newCompletionCmd(opts))
@@ -100,6 +102,10 @@ func Execute() int {
 	var checkErr *output.CheckFailedError
 	if errors.As(err, &checkErr) {
 		return 1
+	}
+	errMsg := err.Error()
+	if strings.Contains(errMsg, "unknown command") && !strings.Contains(errMsg, "Did you mean") {
+		err = fmt.Errorf("%s\n\nRun 'cli-agent-lint --help' for available commands.", errMsg)
 	}
 	opts.Out.Error(err)
 	return 2

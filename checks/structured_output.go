@@ -258,7 +258,7 @@ func (c *checkSD2) Run(ctx context.Context, input *Input) *Result {
 	cleaned = strings.TrimSpace(cleaned)
 
 	if cleaned == "" {
-		return PassResult(c, fmt.Sprintf("clean version output: %s", match))
+		return PassResult(c, match)
 	}
 
 	return FailResult(c, fmt.Sprintf("version output contains decorative text beyond semver: %q (extracted: %s)", truncate(output, 200), match))

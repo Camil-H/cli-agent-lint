@@ -7,6 +7,9 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/cli-agent-lint/cli-agent-lint/discovery"
+	"github.com/cli-agent-lint/cli-agent-lint/probe"
 )
 
 // SD-3: Shell completions available
@@ -228,4 +231,97 @@ func (c *checkSD6) Run(ctx context.Context, input *Input) *Result {
 	return FailResult(c, "no Examples section found in any command's help text")
 }
 
+// SD-7: Actionable error messages
 
+type checkSD7 struct {
+	BaseCheck
+}
+
+func newCheckSD7() *checkSD7 {
+	return &checkSD7{
+		BaseCheck: BaseCheck{
+			CheckID:             "SD-7",
+			CheckName:           "Actionable error messages",
+			CheckCategory:       CatSelfDescribing,
+			CheckSeverity:       Warn,
+			CheckMethod:         Active,
+			CheckRecommendation: "Include a suggested fix or next step in error messages (e.g., \"Did you mean ...?\", \"Try ...\", \"Run ... to ...\").",
+		},
+	}
+}
+
+var actionablePatterns = regexp.MustCompile(`(?i)(did you mean|try |run |use |see |hint:|suggestion:|usage:|available commands|valid|possible)`)
+
+func (c *checkSD7) Run(ctx context.Context, input *Input) *Result {
+	if r := skipIfNoProber(c, input); r != nil {
+		return r
+	}
+
+	result, err := input.Prober.Run(ctx, probe.Opts{
+		Args: []string{"__nonexistent_subcommand__"},
+	})
+	if err != nil {
+		return ErrorResult(c, fmt.Errorf("running nonexistent subcommand: %w", err))
+	}
+
+	combined := result.StdoutStr() + "\n" + result.StderrStr()
+	if strings.TrimSpace(combined) == "" {
+		return FailResult(c, "no output for invalid subcommand — agent gets no guidance on what went wrong")
+	}
+
+	if actionablePatterns.MatchString(combined) {
+		return PassResult(c, "error output contains actionable guidance")
+	}
+
+	return FailResult(c, fmt.Sprintf("error output lacks actionable guidance: %q", truncate(strings.TrimSpace(combined), 200)))
+}
+
+// SD-8: Subcommand fan-out
+
+const maxSubcommandsPerLevel = 15
+
+type checkSD8 struct {
+	BaseCheck
+}
+
+func newCheckSD8() *checkSD8 {
+	return &checkSD8{
+		BaseCheck: BaseCheck{
+			CheckID:             "SD-8",
+			CheckName:           "Subcommand fan-out",
+			CheckCategory:       CatSelfDescribing,
+			CheckSeverity:       Info,
+			CheckMethod:         Passive,
+			CheckRecommendation: "Group subcommands into categories or namespaces. Agents struggle to select the right command when more than ~15 are listed at one level.",
+		},
+	}
+}
+
+func (c *checkSD8) Run(ctx context.Context, input *Input) *Result {
+	if input.Tree == nil || input.Tree.Root == nil {
+		return SkipResult(c, "no command tree available")
+	}
+
+	var worst *discovery.Command
+	worstCount := 0
+
+	input.Tree.Root.Walk(func(cmd *discovery.Command) {
+		n := len(cmd.Subcommands)
+		if n > worstCount {
+			worstCount = n
+			worst = cmd
+		}
+	})
+
+	if worstCount == 0 {
+		return PassResult(c, "no subcommands detected")
+	}
+
+	if worstCount > maxSubcommandsPerLevel {
+		return FailResult(c, fmt.Sprintf("%q has %d subcommands (threshold: %d)",
+			strings.Join(worst.FullPath, " "), worstCount, maxSubcommandsPerLevel))
+	}
+
+	return PassResult(c, fmt.Sprintf("max subcommand fan-out is %d at %q",
+		worstCount, strings.Join(worst.FullPath, " ")))
+}

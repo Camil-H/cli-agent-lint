@@ -65,9 +65,10 @@ Available Commands:
   version     Print version
 
 Flags:
-  -o, --output string    Output format {text,json} (default "text")
+  -o, --output string    Output format {text,json,brief} (default "text")
       --no-color          Disable colored output
   -q, --quiet            Suppress informational output
+      --brief             Show concise output
       --timeout duration  Request timeout (default 30s)
       --version          Print version
       --retry int        Number of retries (default 0)
@@ -213,7 +214,7 @@ HELP
     ;;
 
   *)
-    emit_error "unknown command \"$CMD\""
+    emit_error "unknown command \"$CMD\". Run 'good-cli --help' for available commands."
     exit 1
     ;;
 esac

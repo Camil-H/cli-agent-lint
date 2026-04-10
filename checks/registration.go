@@ -27,6 +27,8 @@ func registerSelfDescribingChecks(r *Registry) {
 	r.Register(newCheckSD4()) // Schema / describe introspection
 	r.Register(newCheckSD5()) // Skill / context files
 	r.Register(newCheckSD6()) // Help text with usage examples
+	r.Register(newCheckSD7()) // Actionable error messages
+	r.Register(newCheckSD8()) // Subcommand fan-out
 }
 
 func registerAutomationSafetyChecks(r *Registry) {
