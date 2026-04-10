@@ -10,9 +10,11 @@ type FlagHit struct {
 // CommandIndex provides pre-computed lookups over a command tree,
 // eliminating redundant full-tree walks across checks.
 type CommandIndex struct {
-	all      []*Command
-	mutating []*Command
-	listLike []*Command
+	all         []*Command
+	mutating    []*Command
+	destructive []*Command
+	listLike    []*Command
+	readOnly    []*Command
 	// fileAccepting contains commands that look like they accept file-path input.
 	fileAccepting []*Command
 	// stringInput contains commands that accept string-typed flags or positional args.
@@ -41,8 +43,14 @@ func NewIndex(root *Command) *CommandIndex {
 		if cmd.IsMutating {
 			idx.mutating = append(idx.mutating, cmd)
 		}
+		if cmd.IsDestructive {
+			idx.destructive = append(idx.destructive, cmd)
+		}
 		if cmd.IsListLike {
 			idx.listLike = append(idx.listLike, cmd)
+		}
+		if cmd.IsReadOnly {
+			idx.readOnly = append(idx.readOnly, cmd)
 		}
 
 		// Pre-compute file-accepting and string-input classifications.
@@ -137,7 +145,9 @@ func stringInputFlag(cmd *Command) (string, string) {
 
 func (idx *CommandIndex) All() []*Command           { return idx.all }
 func (idx *CommandIndex) Mutating() []*Command       { return idx.mutating }
+func (idx *CommandIndex) Destructive() []*Command    { return idx.destructive }
 func (idx *CommandIndex) ListLike() []*Command        { return idx.listLike }
+func (idx *CommandIndex) ReadOnly() []*Command        { return idx.readOnly }
 func (idx *CommandIndex) FileAccepting() []*Command   { return idx.fileAccepting }
 func (idx *CommandIndex) StringInput() []*Command     { return idx.stringInput }
 

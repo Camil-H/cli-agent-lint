@@ -2,6 +2,7 @@ package discovery
 
 import (
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -872,6 +873,46 @@ func TestParseHelpOutput_EmptyText(t *testing.T) {
 	})
 }
 
+func TestParseHelpOutput_ColonSuffixedCommands(t *testing.T) {
+	helpText := `Work seamlessly with GitHub from the command line.
+
+CORE COMMANDS
+  auth:        Authenticate gh and git with GitHub
+  pr:          Manage pull requests
+  repo:        Manage repositories
+
+ADDITIONAL COMMANDS
+  completion:  Generate shell completion scripts
+  config:      Manage configuration
+
+FLAGS
+  --help      Show help for command
+  --version   Show gh version
+`
+	cmd := ParseHelpOutput(helpText, "gh")
+
+	t.Run("strips_trailing_colons", func(t *testing.T) {
+		for _, sub := range cmd.Subcommands {
+			if strings.HasSuffix(sub.Name, ":") {
+				t.Errorf("subcommand %q has trailing colon", sub.Name)
+			}
+		}
+	})
+
+	t.Run("finds_all_subcommands", func(t *testing.T) {
+		want := map[string]bool{"auth": true, "pr": true, "repo": true, "completion": true, "config": true}
+		got := make(map[string]bool)
+		for _, sub := range cmd.Subcommands {
+			got[sub.Name] = true
+		}
+		for name := range want {
+			if !got[name] {
+				t.Errorf("missing subcommand %q", name)
+			}
+		}
+	})
+}
+
 func TestParseHelpOutput_NoSections(t *testing.T) {
 	helpText := "my-tool v1.0: a simple utility that does things.\n\nThis tool has no structured sections at all.\nIt just prints some freeform text as help.\nNo flags, no commands, nothing to parse here.\n"
 	cmd := ParseHelpOutput(helpText, "my-tool")
@@ -1047,8 +1088,7 @@ func TestClassifyCommand(t *testing.T) {
 	}
 
 	listLikeNames := []string{
-		"list", "ls", "search", "find", "get", "query", "show",
-		"describe", "inspect", "view",
+		"list", "ls", "search", "find", "query",
 	}
 	for _, name := range listLikeNames {
 		t.Run("listlike_"+name, func(t *testing.T) {
@@ -1057,8 +1097,38 @@ func TestClassifyCommand(t *testing.T) {
 			if !cmd.IsListLike {
 				t.Errorf("%q: IsListLike = false; want true", name)
 			}
-			if cmd.IsMutating {
-				t.Errorf("%q: IsMutating = true; want false", name)
+			if !cmd.IsReadOnly {
+				t.Errorf("%q: IsReadOnly = false; want true", name)
+			}
+		})
+	}
+
+	readOnlyNotList := []string{
+		"get", "show", "view", "describe", "inspect", "status", "info",
+	}
+	for _, name := range readOnlyNotList {
+		t.Run("readonly_"+name, func(t *testing.T) {
+			cmd := &Command{Name: name}
+			classifyCommand(cmd)
+			if !cmd.IsReadOnly {
+				t.Errorf("%q: IsReadOnly = false; want true", name)
+			}
+			if cmd.IsListLike {
+				t.Errorf("%q: IsListLike = true; want false (single-item read, not a list)", name)
+			}
+		})
+	}
+
+	destructiveNames := []string{"delete", "destroy", "rm", "remove", "drop"}
+	for _, name := range destructiveNames {
+		t.Run("destructive_"+name, func(t *testing.T) {
+			cmd := &Command{Name: name}
+			classifyCommand(cmd)
+			if !cmd.IsDestructive {
+				t.Errorf("%q: IsDestructive = false; want true", name)
+			}
+			if !cmd.IsMutating {
+				t.Errorf("%q: IsMutating = false; want true", name)
 			}
 		})
 	}

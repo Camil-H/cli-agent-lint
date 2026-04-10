@@ -138,16 +138,16 @@ func (c *checkFS3) Run(ctx context.Context, input *Input) *Result {
 	// without side effects. Prefer a leaf, fall back to any list-like command.
 	// Never run mutating commands bare (SEC-1: e.g. kubectl delete).
 	var candidate *discovery.Command
-	for _, cmd := range idx.ListLike() {
+	for _, cmd := range idx.ReadOnly() {
 		if len(cmd.Subcommands) == 0 {
 			candidate = cmd
 			break
 		}
 	}
 	if candidate == nil {
-		listLike := idx.ListLike()
-		if len(listLike) > 0 {
-			candidate = listLike[0]
+		readOnly := idx.ReadOnly()
+		if len(readOnly) > 0 {
+			candidate = readOnly[0]
 		}
 	}
 	if candidate == nil {
@@ -216,6 +216,11 @@ func (c *checkFS4) Run(ctx context.Context, input *Input) *Result {
 			match := envVarSuffixRe.FindString(cmd.RawHelp)
 			return PassResult(c, fmt.Sprintf("found auth env var %s in help for %q", match, strings.Join(cmd.FullPath, " ")))
 		}
+	}
+
+	// Check for non-interactive auth flags across all commands (e.g., gh auth login --with-token)
+	if f, cmd := idx.FindFlag(nonInteractiveAuthFlagNames...); f != nil {
+		return PassResult(c, fmt.Sprintf("found non-interactive auth flag --%s on command %q", f.Name, strings.Join(cmd.FullPath, " ")))
 	}
 
 	for _, name := range []string{"auth", "login"} {

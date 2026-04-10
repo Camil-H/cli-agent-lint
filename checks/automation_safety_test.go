@@ -35,13 +35,13 @@ func TestSA1_SkipNilTree(t *testing.T) {
 	}
 }
 
-func TestSA1_PassNoMutatingCommands(t *testing.T) {
+func TestSA1_PassNoDestructiveCommands(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
 		Subcommands: []*discovery.Command{
 			{Name: "list", FullPath: []string{"mycli", "list"}, IsListLike: true},
-			{Name: "get", FullPath: []string{"mycli", "get"}},
+			{Name: "create", FullPath: []string{"mycli", "create"}, IsMutating: true},
 		},
 	}
 
@@ -49,7 +49,7 @@ func TestSA1_PassNoMutatingCommands(t *testing.T) {
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
-		t.Errorf("expected StatusPass (no mutating commands), got %s: %s", result.Status, result.Detail)
+		t.Errorf("expected StatusPass (no destructive commands), got %s: %s", result.Status, result.Detail)
 	}
 }
 
@@ -59,17 +59,19 @@ func TestSA1_PassAllHaveYesFlag(t *testing.T) {
 		FullPath: []string{"mycli"},
 		Subcommands: []*discovery.Command{
 			{
-				Name:       "create",
-				FullPath:   []string{"mycli", "create"},
-				IsMutating: true,
+				Name:          "delete",
+				FullPath:      []string{"mycli", "delete"},
+				IsMutating:    true,
+				IsDestructive: true,
 				Flags: []*discovery.Flag{
 					{Name: "yes", ShortName: "y", Description: "Skip confirmation"},
 				},
 			},
 			{
-				Name:       "delete",
-				FullPath:   []string{"mycli", "delete"},
-				IsMutating: true,
+				Name:          "remove",
+				FullPath:      []string{"mycli", "remove"},
+				IsMutating:    true,
+				IsDestructive: true,
 				Flags: []*discovery.Flag{
 					{Name: "yes", ShortName: "y", Description: "Skip confirmation"},
 				},
@@ -91,9 +93,10 @@ func TestSA1_PassWithForceFlag(t *testing.T) {
 		FullPath: []string{"mycli"},
 		Subcommands: []*discovery.Command{
 			{
-				Name:       "delete",
-				FullPath:   []string{"mycli", "delete"},
-				IsMutating: true,
+				Name:          "delete",
+				FullPath:      []string{"mycli", "delete"},
+				IsMutating:    true,
+				IsDestructive: true,
 				Flags: []*discovery.Flag{
 					{Name: "force", Description: "Force without confirmation"},
 				},
@@ -109,47 +112,16 @@ func TestSA1_PassWithForceFlag(t *testing.T) {
 	}
 }
 
-func TestSA1_PassWithNonInteractiveFlag(t *testing.T) {
-	root := &discovery.Command{
-		Name:     "mycli",
-		FullPath: []string{"mycli"},
-		Subcommands: []*discovery.Command{
-			{
-				Name:       "update",
-				FullPath:   []string{"mycli", "update"},
-				IsMutating: true,
-				Flags: []*discovery.Flag{
-					{Name: "non-interactive", Description: "Non-interactive mode"},
-				},
-			},
-		},
-	}
-
-	check := newCheckSA1()
-	result := check.Run(context.Background(), makeInput(root))
-
-	if result.Status != StatusPass {
-		t.Errorf("expected StatusPass for --non-interactive flag, got %s: %s", result.Status, result.Detail)
-	}
-}
-
 func TestSA1_FailMissingBypassFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
 		Subcommands: []*discovery.Command{
 			{
-				Name:       "create",
-				FullPath:   []string{"mycli", "create"},
-				IsMutating: true,
-				Flags: []*discovery.Flag{
-					{Name: "yes", ShortName: "y", Description: "Skip confirmation"},
-				},
-			},
-			{
-				Name:       "delete",
-				FullPath:   []string{"mycli", "delete"},
-				IsMutating: true,
+				Name:          "destroy",
+				FullPath:      []string{"mycli", "destroy"},
+				IsMutating:    true,
+				IsDestructive: true,
 				Flags: []*discovery.Flag{
 					{Name: "verbose", Description: "Verbose output"},
 				},
@@ -171,9 +143,10 @@ func TestSA1_PassWithShortYFlag(t *testing.T) {
 		FullPath: []string{"mycli"},
 		Subcommands: []*discovery.Command{
 			{
-				Name:       "delete",
-				FullPath:   []string{"mycli", "delete"},
-				IsMutating: true,
+				Name:          "delete",
+				FullPath:      []string{"mycli", "delete"},
+				IsMutating:    true,
+				IsDestructive: true,
 				Flags: []*discovery.Flag{
 					{Name: "y", ShortName: "y", Description: "Skip confirmation"},
 				},
@@ -519,7 +492,7 @@ func TestSA4_PassNoMutatingCommands(t *testing.T) {
 		FullPath: []string{"mycli"},
 		Subcommands: []*discovery.Command{
 			{Name: "list", FullPath: []string{"mycli", "list"}, IsListLike: true},
-			{Name: "show", FullPath: []string{"mycli", "show"}, IsListLike: true},
+			{Name: "show", FullPath: []string{"mycli", "show"}, IsReadOnly: true},
 		},
 	}
 
@@ -577,9 +550,10 @@ func TestSA4_FailMissingDryRun(t *testing.T) {
 				},
 			},
 			{
-				Name:       "delete",
-				FullPath:   []string{"mycli", "delete"},
-				IsMutating: true,
+				Name:          "delete",
+				FullPath:      []string{"mycli", "delete"},
+				IsMutating:    true,
+				IsDestructive: true,
 				Flags: []*discovery.Flag{
 					{Name: "force", Description: "Force deletion"},
 				},
@@ -712,7 +686,7 @@ func TestSA6_PassClearSeparation(t *testing.T) {
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
 		Subcommands: []*discovery.Command{
-			{Name: "list", FullPath: []string{"mycli", "list"}, IsListLike: true},
+			{Name: "list", FullPath: []string{"mycli", "list"}, IsListLike: true, IsReadOnly: true},
 			{Name: "create", FullPath: []string{"mycli", "create"}, IsMutating: true},
 		},
 	}

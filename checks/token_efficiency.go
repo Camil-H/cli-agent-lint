@@ -130,16 +130,16 @@ func newCheckTE3() *checkTE3 {
 var noColorHelpRe = regexp.MustCompile(`(?i)(--no-color|--color[= ]never|NO_COLOR)`)
 
 func (c *checkTE3) Run(ctx context.Context, input *Input) *Result {
-	if input.Tree == nil || input.Tree.Root == nil {
+	idx := input.GetIndex()
+	if idx == nil {
 		return SkipResult(c, "no command tree available")
 	}
-	root := input.Tree.Root
 
-	if root.HasFlag("no-color", "color") {
+	if idx.HasFlag("no-color", "color") {
 		return PassResult(c, "found --no-color or --color flag")
 	}
 
-	if noColorHelpRe.MatchString(root.RawHelp) {
+	if _, ok := idx.HelpContainsAny("NO_COLOR", "--no-color", "--color never", "--color=never"); ok {
 		return PassResult(c, "found color-control reference in help text")
 	}
 

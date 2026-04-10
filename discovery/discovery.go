@@ -33,7 +33,9 @@ type Command struct {
 	InheritedFlags []*Flag
 	Subcommands    []*Command
 	IsMutating     bool
+	IsDestructive  bool
 	IsListLike     bool
+	IsReadOnly     bool
 }
 
 // HasFlag returns true if the command has a flag matching any of the given
@@ -328,9 +330,8 @@ func parseCommandLines(lines []string) []*Command {
 		if m == nil {
 			continue
 		}
-		name := m[1]
+		name := strings.TrimRight(m[1], ":")
 		desc := strings.TrimSpace(m[2])
-		// Skip lines that look like flags.
 		if strings.HasPrefix(name, "-") {
 			continue
 		}
@@ -553,12 +554,16 @@ func extractDescription(lines []string) string {
 // --- Command classification ---
 
 var mutatingNames = regexp.MustCompile(`^(create|delete|update|set|remove|add|modify|push|put|post|patch|destroy|rm|write|drop|insert|apply|install|uninstall)$`)
-var listLikeNames = regexp.MustCompile(`^(list|ls|search|find|get|query|show|describe|inspect|view)$`)
+var destructiveNames = regexp.MustCompile(`^(delete|destroy|rm|remove|drop|uninstall|purge)$`)
+var listLikeNames = regexp.MustCompile(`^(list|ls|search|find|query)$`)
+var readOnlyNames = regexp.MustCompile(`^(list|ls|search|find|query|get|show|view|describe|inspect|status|info|cat|read|dump|export|print|check|verify|validate|diff|log|history|whoami)$`)
 
 func classifyCommand(cmd *Command) {
 	lower := strings.ToLower(cmd.Name)
 	cmd.IsMutating = mutatingNames.MatchString(lower)
+	cmd.IsDestructive = destructiveNames.MatchString(lower)
 	cmd.IsListLike = listLikeNames.MatchString(lower)
+	cmd.IsReadOnly = readOnlyNames.MatchString(lower)
 }
 
 func mergeFlags(existing, parsed []*Flag) []*Flag {

@@ -362,7 +362,7 @@ func newCheckSD6() *checkSD6 {
 	}
 }
 
-var exampleSectionRe = regexp.MustCompile(`(?m)^(?:Examples?|EXAMPLES?|Usage [Ee]xamples?):\s*$`)
+var exampleSectionRe = regexp.MustCompile(`(?m)^(?:Examples?|EXAMPLES?|Usage [Ee]xamples?):?\s*$`)
 
 func (c *checkSD6) Run(ctx context.Context, input *Input) *Result {
 	idx := input.GetIndex()

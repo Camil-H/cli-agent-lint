@@ -33,26 +33,26 @@ func (c *checkSA1) Run(ctx context.Context, input *Input) *Result {
 	if idx == nil {
 		return SkipResult(c, "no command index available")
 	}
-	mutating := idx.Mutating()
+	destructive := idx.Destructive()
 
-	if len(mutating) == 0 {
-		return PassResult(c, "no mutating commands detected")
+	if len(destructive) == 0 {
+		return PassResult(c, "no destructive commands detected")
 	}
 
 	var missing []string
 	bypassNames := append(confirmBypassFlagNames, "y")
-	for _, cmd := range mutating {
+	for _, cmd := range destructive {
 		if !idx.CmdHasFlag(cmd, bypassNames...) {
 			missing = append(missing, strings.Join(cmd.FullPath, " "))
 		}
 	}
 
 	if len(missing) == 0 {
-		return PassResult(c, fmt.Sprintf("all %d mutating command(s) have a confirmation bypass flag", len(mutating)))
+		return PassResult(c, fmt.Sprintf("all %d destructive command(s) have a confirmation bypass flag", len(destructive)))
 	}
 
-	detail := fmt.Sprintf("%d of %d mutating command(s) missing confirmation bypass flag: %s",
-		len(missing), len(mutating), strings.Join(missing, ", "))
+	detail := fmt.Sprintf("%d of %d destructive command(s) missing confirmation bypass flag: %s",
+		len(missing), len(destructive), strings.Join(missing, ", "))
 	return FailResult(c, detail)
 }
 
@@ -198,7 +198,7 @@ func newCheckSA4() *checkSA4 {
 		CheckCategory:       CatAutomationSafety,
 		CheckSeverity:       Warn,
 		CheckMethod:         Passive,
-		CheckRecommendation: "Add `--dry-run` to all mutating commands so agents can validate before executing.",
+		CheckRecommendation: "Add `--dry-run` to destructive commands so agents can preview before committing.",
 	}}
 }
 
@@ -207,25 +207,25 @@ func (c *checkSA4) Run(ctx context.Context, input *Input) *Result {
 	if idx == nil {
 		return SkipResult(c, "no command index available")
 	}
-	mutating := idx.Mutating()
+	destructive := idx.Destructive()
 
-	if len(mutating) == 0 {
-		return PassResult(c, "no mutating commands detected")
+	if len(destructive) == 0 {
+		return PassResult(c, "no destructive commands detected")
 	}
 
 	var missing []string
-	for _, cmd := range mutating {
+	for _, cmd := range destructive {
 		if !idx.CmdHasFlag(cmd, dryRunFlagNames...) {
 			missing = append(missing, strings.Join(cmd.FullPath, " "))
 		}
 	}
 
 	if len(missing) == 0 {
-		return PassResult(c, fmt.Sprintf("all %d mutating command(s) have a dry-run flag", len(mutating)))
+		return PassResult(c, fmt.Sprintf("all %d destructive command(s) have a dry-run flag", len(destructive)))
 	}
 
-	detail := fmt.Sprintf("%d of %d mutating command(s) missing dry-run flag: %s",
-		len(missing), len(mutating), strings.Join(missing, ", "))
+	detail := fmt.Sprintf("%d of %d destructive command(s) missing dry-run flag: %s",
+		len(missing), len(destructive), strings.Join(missing, ", "))
 	return FailResult(c, detail)
 }
 
@@ -310,7 +310,7 @@ func (c *checkSA6) Run(ctx context.Context, input *Input) *Result {
 		return SkipResult(c, "no command index available")
 	}
 
-	readOnly := idx.ListLike()
+	readOnly := idx.ReadOnly()
 	mutating := idx.Mutating()
 
 	if len(readOnly) == 0 && len(mutating) == 0 {
