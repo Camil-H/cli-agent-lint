@@ -25,7 +25,6 @@ func (r *Registry) Register(c Check) {
 	r.ordered = append(r.ordered, c)
 }
 
-// All returns checks in registration order.
 func (r *Registry) All() []Check {
 	result := make([]Check, len(r.ordered))
 	copy(result, r.ordered)
@@ -117,7 +116,6 @@ func registerBuiltinChecks(r *Registry) {
 	registerPredictabilityChecks(r)
 }
 
-// SortResultsByCategory sorts results by category order, then by check ID.
 func SortResultsByCategory(results []*Result) {
 	catOrder := make(map[Category]int)
 	for i, c := range AllCategories() {

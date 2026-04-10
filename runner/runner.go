@@ -24,7 +24,6 @@ type Config struct {
 
 type ProgressFunc func(phase string, current, total int, detail string)
 
-// Runner orchestrates discovery and check execution.
 type Runner struct {
 	cfg Config
 }

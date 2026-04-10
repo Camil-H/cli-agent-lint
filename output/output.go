@@ -18,7 +18,6 @@ type Config struct {
 	Stderr  io.Writer
 }
 
-// Output manages all user-facing output, respecting format, color, and quiet settings.
 type Output struct {
 	format  string
 	noColor bool
@@ -28,9 +27,6 @@ type Output struct {
 	isTTY   bool
 }
 
-// New creates an Output from the given Config.
-// If Stdout/Stderr are nil, os.Stdout/os.Stderr are used.
-// TTY detection and NO_COLOR env var are applied automatically.
 func New(cfg Config) *Output {
 	stdout := cfg.Stdout
 	if stdout == nil {
@@ -74,8 +70,6 @@ func (o *Output) IsTTY() bool       { return o.isTTY }
 func (o *Output) DataWriter() io.Writer { return o.stdout }
 func (o *Output) DiagWriter() io.Writer { return o.stderr }
 
-// Diag writes a diagnostic message to stderr.
-// Suppressed when --quiet is set.
 func (o *Output) Diag(format string, args ...any) {
 	if o.quiet {
 		return
@@ -83,8 +77,6 @@ func (o *Output) Diag(format string, args ...any) {
 	fmt.Fprintf(o.stderr, format+"\n", args...)
 }
 
-// Error writes an error to stderr. When format is JSON, emits a structured
-// JSON error object. Returns the original error for convenient chaining.
 func (o *Output) Error(err error) error {
 	if err == nil {
 		return nil
@@ -162,8 +154,6 @@ func NewCodedError(code string, format string, args ...any) *CodedError {
 	}
 }
 
-// CheckFailedError signals that one or more fail-severity checks did not pass.
-// Used to drive exit code 1.
 type CheckFailedError struct{}
 
 func (e *CheckFailedError) Error() string {

@@ -109,8 +109,6 @@ func (f *JSONFormatter) Format(w io.Writer, r *Report) error {
 	return enc.Encode(jr)
 }
 
-// resultStatus maps internal status to display status.
-// Failed checks with warn/info severity show as "warn"/"info" instead of "fail".
 func resultStatus(res *checks.Result) string {
 	if res.Status == checks.StatusFail && res.Severity == checks.Warn {
 		return "warn"

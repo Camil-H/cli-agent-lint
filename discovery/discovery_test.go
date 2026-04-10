@@ -5,9 +5,7 @@ import (
 	"testing"
 )
 
-// ---------------------------------------------------------------------------
 // Canned help texts
-// ---------------------------------------------------------------------------
 
 // cobraHelp simulates help output from a Cobra-based CLI.
 // Note: "A tool for managing cloud resources" matches sectionHeaderRe
@@ -113,9 +111,7 @@ SUBCOMMANDS:
     help      Print this message or the help of the given subcommand(s)
 `
 
-// ---------------------------------------------------------------------------
 // Tests for ParseHelpOutput: Cobra-style
-// ---------------------------------------------------------------------------
 
 func TestParseHelpOutput_Cobra(t *testing.T) {
 	cmd := ParseHelpOutput(cobraHelp, "cloudctl")
@@ -250,9 +246,7 @@ func TestParseHelpOutput_Cobra(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
 // Tests for ParseHelpOutput: Click/Typer-style
-// ---------------------------------------------------------------------------
 
 func TestParseHelpOutput_Click(t *testing.T) {
 	cmd := ParseHelpOutput(clickHelp, "myapp")
@@ -323,9 +317,7 @@ func TestParseHelpOutput_Click(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
 // Tests for ParseHelpOutput: Argparse-style
-// ---------------------------------------------------------------------------
 
 func TestParseHelpOutput_Argparse(t *testing.T) {
 	cmd := ParseHelpOutput(argparseHelp, "manage.py")
@@ -395,9 +387,7 @@ func TestParseHelpOutput_Argparse(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
 // Tests for brace subcommand detection
-// ---------------------------------------------------------------------------
 
 func TestParseHelpOutput_ArgparseBraceSubcommands(t *testing.T) {
 	cmd := ParseHelpOutput(argparseBraceHelp, "tool.py")
@@ -439,9 +429,7 @@ func TestParseHelpOutput_ArgparseBraceSubcommands(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
 // Tests for ParseHelpOutput: Clap-style (Rust)
-// ---------------------------------------------------------------------------
 
 func TestParseHelpOutput_Clap(t *testing.T) {
 	cmd := ParseHelpOutput(clapHelp, "my-rust-cli")
@@ -539,9 +527,7 @@ func TestParseHelpOutput_Clap(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
 // Tests for Command helper methods
-// ---------------------------------------------------------------------------
 
 func TestCommand_HasFlag(t *testing.T) {
 	cmd := &Command{
@@ -745,9 +731,7 @@ func TestCommand_AllCommands(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
 // Tests for enum detection
-// ---------------------------------------------------------------------------
 
 func TestParseEnumValues(t *testing.T) {
 	tests := []struct {
@@ -840,9 +824,7 @@ func TestParseEnumFromDesc(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
 // Edge cases
-// ---------------------------------------------------------------------------
 
 func TestParseHelpOutput_EmptyText(t *testing.T) {
 	cmd := ParseHelpOutput("", "empty")
@@ -1043,9 +1025,7 @@ Persistent Flags:
 	})
 }
 
-// ---------------------------------------------------------------------------
 // Tests for classifyCommand
-// ---------------------------------------------------------------------------
 
 func TestClassifyCommand(t *testing.T) {
 	mutatingNames := []string{
@@ -1116,9 +1096,7 @@ func TestClassifyCommand(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
 // Tests for internal helpers
-// ---------------------------------------------------------------------------
 
 func TestIsSectionHeader(t *testing.T) {
 	tests := []struct {
@@ -1521,9 +1499,7 @@ func TestExtractDescription(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
 // Test helpers
-// ---------------------------------------------------------------------------
 
 func subNames(cmds []*Command) []string {
 	var names []string

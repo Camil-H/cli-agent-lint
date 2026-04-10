@@ -16,7 +16,6 @@ func stripANSI(s string) string {
 	return ansiRe.ReplaceAllString(s, "")
 }
 
-// palette holds ANSI color codes. All empty when NoColor is true.
 type palette struct {
 	green  string
 	yellow string

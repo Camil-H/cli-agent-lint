@@ -9,7 +9,6 @@ import (
 	"github.com/Camil-H/cli-agent-lint/probe"
 )
 
-// Prober is the consumer-side type alias so checks depend on the probe.Runner interface.
 type Prober = probe.Runner
 
 type Severity int
@@ -33,7 +32,6 @@ func (s Severity) String() string {
 	}
 }
 
-// Points returns the score contribution for a passing check at this severity.
 func (s Severity) Points() int {
 	switch s {
 	case Info:
@@ -70,7 +68,6 @@ const (
 	CatPredictability   Category = "predictability"
 )
 
-// AllCategories returns all valid categories in display order.
 func AllCategories() []Category {
 	return []Category{
 		CatFlowSafety,
@@ -142,8 +139,6 @@ func (r *Result) Points() int {
 	return 0
 }
 
-// MaxPoints returns the maximum possible points.
-// Skipped and errored checks contribute 0 to both earned and possible.
 func (r *Result) MaxPoints() int {
 	if r.Status == StatusSkip || r.Status == StatusError {
 		return 0
@@ -194,7 +189,6 @@ type Check interface {
 	Run(ctx context.Context, input *Input) *Result
 }
 
-// BaseCheck provides default implementations for Check metadata methods.
 type BaseCheck struct {
 	CheckID             string
 	CheckName           string
@@ -263,13 +257,10 @@ func ErrorResult(c Check, err error) *Result {
 	}
 }
 
-// SkipActiveResult returns a skip result for active checks when --no-probe is set.
 func SkipActiveResult(c Check) *Result {
 	return SkipResult(c, "skipped: active check disabled by --no-probe")
 }
 
-// skipIfNoProber returns a SkipActiveResult if the prober is nil.
-// Returns nil if the prober is available and the check should proceed.
 func skipIfNoProber(c Check, input *Input) *Result {
 	if input.Prober == nil {
 		return SkipActiveResult(c)

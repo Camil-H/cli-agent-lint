@@ -66,7 +66,6 @@ func isSensitiveEnvVar(name string) bool {
 	return false
 }
 
-// Runner is the interface for safely executing a target CLI.
 type Runner interface {
 	Run(ctx context.Context, opts Opts) (*Result, error)
 	RunHelp(ctx context.Context, args ...string) (*Result, error)
@@ -74,7 +73,6 @@ type Runner interface {
 
 var _ Runner = (*Prober)(nil)
 
-// Prober executes a target CLI safely with timeouts and stream capture.
 type Prober struct {
 	targetPath     string
 	defaultTimeout time.Duration
@@ -204,8 +202,6 @@ var envDefaults = map[string]string{
 	"TERM":      "dumb",
 }
 
-// buildBaseEnv creates a sanitized copy of os.Environ() with defaults applied.
-// Called once at Prober construction.
 func buildBaseEnv() []string {
 	base := os.Environ()
 	result := make([]string, 0, len(base)+len(envDefaults))
@@ -266,7 +262,6 @@ func (p *Prober) buildEnv(extra []string) []string {
 	return result
 }
 
-// limitedWriter wraps a bytes.Buffer and stops writing after a byte limit.
 type limitedWriter struct {
 	buf       *bytes.Buffer
 	remaining int

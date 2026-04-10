@@ -5,7 +5,6 @@ import (
 	"testing"
 )
 
-// dummyCheck is a minimal Check implementation for registry tests.
 type dummyCheck struct {
 	BaseCheck
 }

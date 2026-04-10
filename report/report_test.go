@@ -7,7 +7,6 @@ import (
 	"github.com/Camil-H/cli-agent-lint/checks"
 )
 
-// helper to build a Result quickly.
 func makeResult(id string, cat checks.Category, sev checks.Severity, status checks.Status) *checks.Result {
 	return &checks.Result{
 		CheckID:   id,

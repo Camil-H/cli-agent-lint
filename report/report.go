@@ -155,7 +155,6 @@ func (r *Report) GetSummary() Summary {
 	return s
 }
 
-// AttentionCount returns the number of non-pass, non-skip checks.
 func (r *Report) AttentionCount() (total, failCount, warnCount int) {
 	for _, res := range r.Results {
 		if res.Status == checks.StatusFail {

@@ -515,8 +515,6 @@ func TestFS5_Metadata(t *testing.T) {
 	}
 }
 
-// Helper function tests
-
 func TestHasAuthEnvVarMention(t *testing.T) {
 	tests := []struct {
 		name     string

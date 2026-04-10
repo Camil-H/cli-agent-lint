@@ -9,9 +9,7 @@ import (
 	"github.com/Camil-H/cli-agent-lint/output"
 )
 
-// ---------------------------------------------------------------------------
 // containsControlChars
-// ---------------------------------------------------------------------------
 
 func TestContainsControlChars_TrueForControlCharacters(t *testing.T) {
 	cases := []struct {
@@ -56,9 +54,7 @@ func TestContainsControlChars_FalseForSafeStrings(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
 // rejectControlChars
-// ---------------------------------------------------------------------------
 
 func TestRejectControlChars_ErrorForDirtyArgs(t *testing.T) {
 	// rejectControlChars also checks os.Args[1:], but the explicit args
@@ -85,9 +81,7 @@ func TestRejectControlChars_NilForCleanArgs(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
 // NewRootCmd
-// ---------------------------------------------------------------------------
 
 func TestNewRootCmd_Use(t *testing.T) {
 	opts := &GlobalOptions{}
@@ -140,9 +134,7 @@ func TestNewRootCmd_HasVersionFlag(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
 // printVersion
-// ---------------------------------------------------------------------------
 
 func newTestOutput(buf *bytes.Buffer, format string) *output.Output {
 	return output.New(output.Config{
@@ -152,9 +144,7 @@ func newTestOutput(buf *bytes.Buffer, format string) *output.Output {
 	})
 }
 
-// ---------------------------------------------------------------------------
 // detectOutputFormatFromArgs
-// ---------------------------------------------------------------------------
 
 func TestDetectOutputFormatFromArgs(t *testing.T) {
 	tests := []struct {

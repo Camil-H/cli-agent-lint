@@ -7,9 +7,7 @@ import (
 	"testing"
 )
 
-// ---------------------------------------------------------------------------
 // isSensitiveEnvVar
-// ---------------------------------------------------------------------------
 
 func TestIsSensitiveEnvVar_Prefixes(t *testing.T) {
 	tests := []struct {
@@ -122,9 +120,7 @@ func TestIsSensitiveEnvVar_SafeVars(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
 // buildBaseEnv
-// ---------------------------------------------------------------------------
 
 func TestBuildBaseEnv_FiltersSensitiveVars(t *testing.T) {
 	// Save and restore the environment around the test.
@@ -229,9 +225,7 @@ func TestBuildBaseEnv_AddsDefaultsNotInBase(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
 // Prober.buildEnv with extras
-// ---------------------------------------------------------------------------
 
 func TestProberBuildEnv_NoExtras(t *testing.T) {
 	base := []string{"PATH=/usr/bin", "HOME=/home/test", "PAGER=cat"}
@@ -340,9 +334,7 @@ func TestProberBuildEnv_DoesNotMutateBase(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
 // limitedWriter
-// ---------------------------------------------------------------------------
 
 func TestLimitedWriter_WritesUpToLimit(t *testing.T) {
 	var buf bytes.Buffer
@@ -469,9 +461,7 @@ func TestLimitedWriter_SmallWrites(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
 // Result.StdoutStr / StderrStr
-// ---------------------------------------------------------------------------
 
 func TestResultStdoutStr(t *testing.T) {
 	tests := []struct {
@@ -518,9 +508,7 @@ func TestResultStderrStr(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
 // helpers
-// ---------------------------------------------------------------------------
 
 // envSliceToMap converts a []string of "KEY=VALUE" into a map.
 // If a key appears multiple times, the last value wins.
