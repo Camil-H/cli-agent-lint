@@ -459,3 +459,112 @@ func TestSA4_Metadata(t *testing.T) {
 		t.Errorf("expected Passive, got %s", check.Method())
 	}
 }
+
+// SA-5: Idempotency indicators
+
+func TestSA5_PassNoMutating(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{Name: "list", FullPath: []string{"mycli", "list"}, IsListLike: true},
+		},
+	}
+	check := newCheckSA5()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusPass {
+		t.Errorf("expected pass (no mutating), got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSA5_PassWithIdempotencyFlag(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{Name: "create", FullPath: []string{"mycli", "create"}, IsMutating: true,
+				Flags: []*discovery.Flag{{Name: "if-not-exists", Description: "Skip if already exists"}}},
+		},
+	}
+	check := newCheckSA5()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusPass {
+		t.Errorf("expected pass for --if-not-exists, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSA5_FailCreateWithoutIdempotency(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{Name: "create", FullPath: []string{"mycli", "create"}, IsMutating: true},
+		},
+	}
+	check := newCheckSA5()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusFail {
+		t.Errorf("expected fail for create without idempotency, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSA5_PassDeleteOnly(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{Name: "delete", FullPath: []string{"mycli", "delete"}, IsMutating: true},
+		},
+	}
+	check := newCheckSA5()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusPass {
+		t.Errorf("expected pass (delete is inherently idempotent), got %s: %s", result.Status, result.Detail)
+	}
+}
+
+// SA-6: Read/write command separation
+
+func TestSA6_PassClearSeparation(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{Name: "list", FullPath: []string{"mycli", "list"}, IsListLike: true},
+			{Name: "create", FullPath: []string{"mycli", "create"}, IsMutating: true},
+		},
+	}
+	check := newCheckSA6()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusPass {
+		t.Errorf("expected pass for clear separation, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSA6_FailMutatingOnly(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{Name: "create", FullPath: []string{"mycli", "create"}, IsMutating: true},
+			{Name: "delete", FullPath: []string{"mycli", "delete"}, IsMutating: true},
+		},
+	}
+	check := newCheckSA6()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusFail {
+		t.Errorf("expected fail for mutating-only, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSA6_PassNoCommands(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+	}
+	check := newCheckSA6()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusPass {
+		t.Errorf("expected pass (no commands), got %s: %s", result.Status, result.Detail)
+	}
+}

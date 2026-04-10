@@ -36,6 +36,8 @@ func registerAutomationSafetyChecks(r *Registry) {
 	r.Register(newCheckSA2()) // Rejects path traversal
 	r.Register(newCheckSA3()) // Rejects control characters
 	r.Register(newCheckSA4()) // Dry-run support
+	r.Register(newCheckSA5()) // Idempotency indicators
+	r.Register(newCheckSA6()) // Read/write command separation
 }
 
 func registerPredictabilityChecks(r *Registry) {
@@ -43,4 +45,5 @@ func registerPredictabilityChecks(r *Registry) {
 	r.Register(newCheckPV2()) // Retry / rate-limit hints
 	r.Register(newCheckPV3()) // Deterministic output
 	r.Register(newCheckPV4()) // Distinct exit codes for error classes
+	r.Register(newCheckPV5()) // Reports actual effects
 }

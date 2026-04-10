@@ -182,4 +182,104 @@ func (c *checkSA4) Run(ctx context.Context, input *Input) *Result {
 	return FailResult(c, detail)
 }
 
+// SA-5: Idempotency indicators
+
+type checkSA5 struct{ BaseCheck }
+
+func newCheckSA5() *checkSA5 {
+	return &checkSA5{BaseCheck{
+		CheckID:             "SA-5",
+		CheckName:           "Idempotency indicators",
+		CheckCategory:       CatAutomationSafety,
+		CheckSeverity:       Info,
+		CheckMethod:         Passive,
+		CheckRecommendation: "Support idempotent operations via flags like `--if-not-exists`, `--upsert`, or `--create-or-update` so agent retries don't create duplicates.",
+	}}
+}
+
+var idempotencyFlagNames = []string{
+	"if-not-exists", "if-exists", "upsert", "idempotency-key",
+	"create-or-update", "replace", "force-create",
+}
+var idempotencyHelpTerms = []string{"idempotent", "if already exists", "no-op if", "already exists"}
+var createCommandNames = []string{"create", "add", "new", "insert", "put"}
+
+func (c *checkSA5) Run(ctx context.Context, input *Input) *Result {
+	idx := input.GetIndex()
+	if idx == nil {
+		return SkipResult(c, "no command index available")
+	}
+
+	mutating := idx.Mutating()
+	if len(mutating) == 0 {
+		return PassResult(c, "no mutating commands detected; idempotency not applicable")
+	}
+
+	// Check for idempotency flags
+	if idx.HasFlag(idempotencyFlagNames...) {
+		return PassResult(c, "found idempotency-related flag")
+	}
+
+	// Check for idempotency terms in help text
+	if _, ok := idx.HelpContainsAny(idempotencyHelpTerms...); ok {
+		return PassResult(c, "found idempotency reference in help text")
+	}
+
+	// Only fail if there are create-like commands (updates/deletes are often inherently idempotent)
+	hasCreate := false
+	for _, cmd := range mutating {
+		for _, name := range createCommandNames {
+			if strings.EqualFold(cmd.Name, name) {
+				hasCreate = true
+				break
+			}
+		}
+	}
+	if !hasCreate {
+		return PassResult(c, "no create-like commands detected; mutating commands may be inherently idempotent")
+	}
+
+	return FailResult(c, "create-like commands found but no idempotency flags or help text detected")
+}
+
+// SA-6: Read vs write command separation
+
+type checkSA6 struct{ BaseCheck }
+
+func newCheckSA6() *checkSA6 {
+	return &checkSA6{BaseCheck{
+		CheckID:             "SA-6",
+		CheckName:           "Read/write command separation",
+		CheckCategory:       CatAutomationSafety,
+		CheckSeverity:       Info,
+		CheckMethod:         Passive,
+		CheckRecommendation: "Clearly separate read-only commands (get, list, describe) from mutating ones (create, delete, update) so agent frameworks can apply different approval policies.",
+	}}
+}
+
+func (c *checkSA6) Run(ctx context.Context, input *Input) *Result {
+	idx := input.GetIndex()
+	if idx == nil {
+		return SkipResult(c, "no command index available")
+	}
+
+	readOnly := idx.ListLike()
+	mutating := idx.Mutating()
+
+	if len(readOnly) == 0 && len(mutating) == 0 {
+		return PassResult(c, "no classifiable commands detected")
+	}
+
+	if len(readOnly) == 0 && len(mutating) > 0 {
+		return FailResult(c, fmt.Sprintf("found %d mutating command(s) but no read-only commands (list, get, describe)", len(mutating)))
+	}
+
+	if len(mutating) == 0 && len(readOnly) > 0 {
+		return PassResult(c, fmt.Sprintf("all %d classifiable command(s) are read-only", len(readOnly)))
+	}
+
+	return PassResult(c, fmt.Sprintf("clear separation: %d read-only and %d mutating command(s)",
+		len(readOnly), len(mutating)))
+}
+
 

@@ -312,4 +312,59 @@ func (c *checkPV4) Run(ctx context.Context, input *Input) *Result {
 	return FailResult(c, "no exit code documentation found in help text")
 }
 
+// PV-5: Reports actual effects in output
+
+type checkPV5 struct {
+	BaseCheck
+}
+
+func newCheckPV5() *checkPV5 {
+	return &checkPV5{
+		BaseCheck: BaseCheck{
+			CheckID:             "PV-5",
+			CheckName:           "Reports actual effects",
+			CheckCategory:       CatPredictability,
+			CheckSeverity:       Info,
+			CheckMethod:         Passive,
+			CheckRecommendation: "Mutating commands should report what actually happened (e.g., \"created 3 items, skipped 1 duplicate\") so agents can verify their work.",
+		},
+	}
+}
+
+var effectReportTerms = []string{
+	"created", "updated", "deleted", "removed", "skipped",
+	"unchanged", "modified", "applied", "succeeded", "failed",
+	"added", "total", "count", "summary",
+}
+
+func (c *checkPV5) Run(ctx context.Context, input *Input) *Result {
+	idx := input.GetIndex()
+	if idx == nil {
+		return SkipResult(c, "no command tree available")
+	}
+
+	mutating := idx.Mutating()
+	if len(mutating) == 0 {
+		return PassResult(c, "no mutating commands detected; effect reporting not applicable")
+	}
+
+	// Check if mutating commands mention effect reporting in help
+	for _, cmd := range mutating {
+		h := idx.LowerHelp(cmd)
+		for _, term := range effectReportTerms {
+			if strings.Contains(h, term) {
+				return PassResult(c, fmt.Sprintf("found effect-reporting term %q in %q help text",
+					term, strings.Join(cmd.FullPath, " ")))
+			}
+		}
+	}
+
+	// Check if JSON output mentions result/count fields
+	if _, ok := idx.HelpContainsAny("result", "count", "summary", "affected", "rows"); ok {
+		return PassResult(c, "found result/count reference in help text")
+	}
+
+	return FailResult(c, "mutating commands found but no effect-reporting terms in help text")
+}
+
 

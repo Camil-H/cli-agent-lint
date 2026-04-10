@@ -744,6 +744,55 @@ func TestPV4_SkipNilTree(t *testing.T) {
 	}
 }
 
+// PV-5: Reports actual effects
+
+func TestPV5_PassNoMutating(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{Name: "list", FullPath: []string{"mycli", "list"}, IsListLike: true},
+		},
+	}
+	check := newCheckPV5()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusPass {
+		t.Errorf("expected pass (no mutating), got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestPV5_PassWithEffectTerms(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{Name: "create", FullPath: []string{"mycli", "create"}, IsMutating: true,
+				RawHelp: "Create a resource.\n\nReports the count of created and skipped items."},
+		},
+	}
+	check := newCheckPV5()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusPass {
+		t.Errorf("expected pass for effect terms, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestPV5_FailNoEffectTerms(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{Name: "create", FullPath: []string{"mycli", "create"}, IsMutating: true,
+				RawHelp: "Create a new resource."},
+		},
+	}
+	check := newCheckPV5()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusFail {
+		t.Errorf("expected fail for missing effect terms, got %s: %s", result.Status, result.Detail)
+	}
+}
+
 func TestPV4_PassWithExitCodesSection(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
