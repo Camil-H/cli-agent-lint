@@ -9,6 +9,53 @@ import (
 	"github.com/Camil-H/cli-agent-lint/probe"
 )
 
+// SA-1: Confirmation bypass for destructive commands
+
+type checkSA1 struct {
+	BaseCheck
+}
+
+func newCheckSA1() *checkSA1 {
+	return &checkSA1{
+		BaseCheck: BaseCheck{
+			CheckID:             "SA-1",
+			CheckName:           "Confirmation bypass for destructive commands",
+			CheckCategory:       CatAutomationSafety,
+			CheckSeverity:       Warn,
+			CheckMethod:         Passive,
+			CheckRecommendation: "Add a --yes or --force flag to destructive commands so agents can skip interactive confirmation.",
+		},
+	}
+}
+
+func (c *checkSA1) Run(ctx context.Context, input *Input) *Result {
+	idx := input.GetIndex()
+	if idx == nil {
+		return SkipResult(c, "no command index available")
+	}
+	mutating := idx.Mutating()
+
+	if len(mutating) == 0 {
+		return PassResult(c, "no mutating commands detected")
+	}
+
+	var missing []string
+	bypassNames := append(confirmBypassFlagNames, "y")
+	for _, cmd := range mutating {
+		if !idx.CmdHasFlag(cmd, bypassNames...) {
+			missing = append(missing, strings.Join(cmd.FullPath, " "))
+		}
+	}
+
+	if len(missing) == 0 {
+		return PassResult(c, fmt.Sprintf("all %d mutating command(s) have a confirmation bypass flag", len(mutating)))
+	}
+
+	detail := fmt.Sprintf("%d of %d mutating command(s) missing confirmation bypass flag: %s",
+		len(missing), len(mutating), strings.Join(missing, ", "))
+	return FailResult(c, detail)
+}
+
 // SA-2: Rejects path traversal
 
 type checkSA2 struct{ BaseCheck }
@@ -281,5 +328,3 @@ func (c *checkSA6) Run(ctx context.Context, input *Input) *Result {
 	return PassResult(c, fmt.Sprintf("clear separation: %d read-only and %d mutating command(s)",
 		len(readOnly), len(mutating)))
 }
-
-

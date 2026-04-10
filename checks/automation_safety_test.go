@@ -7,6 +7,188 @@ import (
 	"github.com/Camil-H/cli-agent-lint/discovery"
 )
 
+// SA-1: Confirmation bypass for destructive commands (passive check)
+
+func TestSA1_Metadata(t *testing.T) {
+	check := newCheckSA1()
+
+	if check.ID() != "SA-1" {
+		t.Errorf("expected SA-1, got %s", check.ID())
+	}
+	if check.Category() != CatAutomationSafety {
+		t.Errorf("expected automation-safety, got %s", check.Category())
+	}
+	if check.Severity() != Warn {
+		t.Errorf("expected Warn, got %s", check.Severity())
+	}
+	if check.Method() != Passive {
+		t.Errorf("expected Passive, got %s", check.Method())
+	}
+}
+
+func TestSA1_SkipNilTree(t *testing.T) {
+	check := newCheckSA1()
+	result := check.Run(context.Background(), &Input{Tree: nil})
+
+	if result.Status != StatusSkip {
+		t.Errorf("expected StatusSkip, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSA1_PassNoMutatingCommands(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{Name: "list", FullPath: []string{"mycli", "list"}, IsListLike: true},
+			{Name: "get", FullPath: []string{"mycli", "get"}},
+		},
+	}
+
+	check := newCheckSA1()
+	result := check.Run(context.Background(), makeInput(root))
+
+	if result.Status != StatusPass {
+		t.Errorf("expected StatusPass (no mutating commands), got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSA1_PassAllHaveYesFlag(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{
+				Name:       "create",
+				FullPath:   []string{"mycli", "create"},
+				IsMutating: true,
+				Flags: []*discovery.Flag{
+					{Name: "yes", ShortName: "y", Description: "Skip confirmation"},
+				},
+			},
+			{
+				Name:       "delete",
+				FullPath:   []string{"mycli", "delete"},
+				IsMutating: true,
+				Flags: []*discovery.Flag{
+					{Name: "yes", ShortName: "y", Description: "Skip confirmation"},
+				},
+			},
+		},
+	}
+
+	check := newCheckSA1()
+	result := check.Run(context.Background(), makeInput(root))
+
+	if result.Status != StatusPass {
+		t.Errorf("expected StatusPass, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSA1_PassWithForceFlag(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{
+				Name:       "delete",
+				FullPath:   []string{"mycli", "delete"},
+				IsMutating: true,
+				Flags: []*discovery.Flag{
+					{Name: "force", Description: "Force without confirmation"},
+				},
+			},
+		},
+	}
+
+	check := newCheckSA1()
+	result := check.Run(context.Background(), makeInput(root))
+
+	if result.Status != StatusPass {
+		t.Errorf("expected StatusPass for --force flag, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSA1_PassWithNonInteractiveFlag(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{
+				Name:       "update",
+				FullPath:   []string{"mycli", "update"},
+				IsMutating: true,
+				Flags: []*discovery.Flag{
+					{Name: "non-interactive", Description: "Non-interactive mode"},
+				},
+			},
+		},
+	}
+
+	check := newCheckSA1()
+	result := check.Run(context.Background(), makeInput(root))
+
+	if result.Status != StatusPass {
+		t.Errorf("expected StatusPass for --non-interactive flag, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSA1_FailMissingBypassFlag(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{
+				Name:       "create",
+				FullPath:   []string{"mycli", "create"},
+				IsMutating: true,
+				Flags: []*discovery.Flag{
+					{Name: "yes", ShortName: "y", Description: "Skip confirmation"},
+				},
+			},
+			{
+				Name:       "delete",
+				FullPath:   []string{"mycli", "delete"},
+				IsMutating: true,
+				Flags: []*discovery.Flag{
+					{Name: "verbose", Description: "Verbose output"},
+				},
+			},
+		},
+	}
+
+	check := newCheckSA1()
+	result := check.Run(context.Background(), makeInput(root))
+
+	if result.Status != StatusFail {
+		t.Errorf("expected Fail, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSA1_PassWithShortYFlag(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{
+				Name:       "delete",
+				FullPath:   []string{"mycli", "delete"},
+				IsMutating: true,
+				Flags: []*discovery.Flag{
+					{Name: "y", ShortName: "y", Description: "Skip confirmation"},
+				},
+			},
+		},
+	}
+
+	check := newCheckSA1()
+	result := check.Run(context.Background(), makeInput(root))
+
+	if result.Status != StatusPass {
+		t.Errorf("expected StatusPass for -y flag, got %s: %s", result.Status, result.Detail)
+	}
+}
+
 // SA-2: Rejects path traversal (active check)
 
 func TestSA2_SkipNilProber(t *testing.T) {

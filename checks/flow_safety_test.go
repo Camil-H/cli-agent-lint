@@ -7,6 +7,114 @@ import (
 	"github.com/Camil-H/cli-agent-lint/discovery"
 )
 
+// FS-1: Stderr vs stdout discipline (active check)
+
+func TestFS1_SkipNilProber(t *testing.T) {
+	check := newCheckFS1()
+	result := check.Run(context.Background(), &Input{Prober: nil})
+
+	if result.Status != StatusSkip {
+		t.Errorf("expected StatusSkip, got %s: %s", result.Status, result.Detail)
+	}
+	if result.Detail != "skipped: active check disabled by --no-probe" {
+		t.Errorf("unexpected detail: %s", result.Detail)
+	}
+}
+
+func TestFS1_Metadata(t *testing.T) {
+	check := newCheckFS1()
+	if check.Method() != Active {
+		t.Errorf("expected Active method, got %s", check.Method())
+	}
+	if check.Severity() != Fail {
+		t.Errorf("expected Fail severity, got %s", check.Severity())
+	}
+}
+
+// FS-2: Non-TTY detection (active check)
+
+func TestFS2_SkipNilProber(t *testing.T) {
+	check := &checkFS2{
+		BaseCheck: BaseCheck{
+			CheckID:       "FS-2",
+			CheckName:     "Non-TTY detection (no ANSI in pipes)",
+			CheckCategory: CatFlowSafety,
+			CheckSeverity: Fail,
+			CheckMethod:   Active,
+		},
+	}
+	result := check.Run(context.Background(), &Input{Prober: nil})
+
+	if result.Status != StatusSkip {
+		t.Errorf("expected StatusSkip for nil prober, got %s: %s", result.Status, result.Detail)
+	}
+	if result.Detail != "skipped: active check disabled by --no-probe" {
+		t.Errorf("unexpected detail: %s", result.Detail)
+	}
+}
+
+func TestFS2_Metadata(t *testing.T) {
+	r := DefaultRegistry()
+	check := r.Get("FS-2")
+	if check == nil {
+		t.Fatal("FS-2 not found in registry")
+	}
+
+	t.Run("ID", func(t *testing.T) {
+		if check.ID() != "FS-2" {
+			t.Errorf("expected FS-2, got %s", check.ID())
+		}
+	})
+
+	t.Run("Category", func(t *testing.T) {
+		if check.Category() != CatFlowSafety {
+			t.Errorf("expected flow-safety, got %s", check.Category())
+		}
+	})
+
+	t.Run("Method", func(t *testing.T) {
+		if check.Method() != Active {
+			t.Errorf("expected Active, got %s", check.Method())
+		}
+	})
+
+	t.Run("Severity", func(t *testing.T) {
+		if check.Severity() != Fail {
+			t.Errorf("expected Fail, got %s", check.Severity())
+		}
+	})
+}
+
+// FS-3: No interactive prompts in non-TTY (active check)
+
+func TestFS3_SkipNilProber(t *testing.T) {
+	r := DefaultRegistry()
+	check := r.Get("FS-3")
+	result := check.Run(context.Background(), &Input{Prober: nil, Tree: makeTree(&discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+	})})
+
+	if result.Status != StatusSkip {
+		t.Errorf("expected StatusSkip for nil prober, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestFS3_Metadata(t *testing.T) {
+	r := DefaultRegistry()
+	check := r.Get("FS-3")
+
+	if check.Method() != Active {
+		t.Errorf("expected Active, got %s", check.Method())
+	}
+	if check.Severity() != Fail {
+		t.Errorf("expected Fail, got %s", check.Severity())
+	}
+	if check.Category() != CatFlowSafety {
+		t.Errorf("expected flow-safety, got %s", check.Category())
+	}
+}
+
 // FS-4: Env var auth support (passive check)
 
 func TestFS4_PassWithAuthEnvVar(t *testing.T) {
@@ -514,6 +622,48 @@ func TestFindLoginCommand(t *testing.T) {
 		}
 		if cmd.Name != "login" {
 			t.Errorf("expected login, got %s", cmd.Name)
+		}
+	})
+}
+
+// FS-6: Exit codes (active check)
+
+func TestFS6_SkipNilProber(t *testing.T) {
+	check := newCheckFS6()
+	result := check.Run(context.Background(), &Input{Prober: nil})
+
+	if result.Status != StatusSkip {
+		t.Errorf("expected StatusSkip for nil prober, got %s: %s", result.Status, result.Detail)
+	}
+	if result.Detail != "skipped: active check disabled by --no-probe" {
+		t.Errorf("unexpected detail: %s", result.Detail)
+	}
+}
+
+func TestFS6_Metadata(t *testing.T) {
+	check := newCheckFS6()
+
+	t.Run("ID", func(t *testing.T) {
+		if check.ID() != "FS-6" {
+			t.Errorf("expected FS-6, got %s", check.ID())
+		}
+	})
+
+	t.Run("Category", func(t *testing.T) {
+		if check.Category() != CatFlowSafety {
+			t.Errorf("expected flow-safety, got %s", check.Category())
+		}
+	})
+
+	t.Run("Severity", func(t *testing.T) {
+		if check.Severity() != Fail {
+			t.Errorf("expected Fail, got %s", check.Severity())
+		}
+	})
+
+	t.Run("Method", func(t *testing.T) {
+		if check.Method() != Active {
+			t.Errorf("expected Active, got %s", check.Method())
 		}
 	})
 }

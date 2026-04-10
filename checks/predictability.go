@@ -8,53 +8,7 @@ import (
 	"strings"
 
 	"github.com/Camil-H/cli-agent-lint/discovery"
-	"github.com/Camil-H/cli-agent-lint/probe"
 )
-
-// FS-6: Exit codes
-
-type checkFS6 struct {
-	BaseCheck
-}
-
-func newCheckFS6() *checkFS6 {
-	return &checkFS6{
-		BaseCheck: BaseCheck{
-			CheckID:             "FS-6",
-			CheckName:           "Exit codes",
-			CheckCategory:       CatFlowSafety,
-			CheckSeverity:       Fail,
-			CheckMethod:         Active,
-			CheckRecommendation: "Use distinct non-zero exit codes for different failure modes (bad input, auth failure, server error).",
-		},
-	}
-}
-
-func (c *checkFS6) Run(ctx context.Context, input *Input) *Result {
-	if r := skipIfNoProber(c, input); r != nil {
-		return r
-	}
-
-	helpResult, err := input.Prober.RunHelp(ctx)
-	if err != nil {
-		return ErrorResult(c, fmt.Errorf("running --help: %w", err))
-	}
-	if helpResult.ExitCode != 0 {
-		return FailResult(c, fmt.Sprintf("--help returned non-zero exit code %d", helpResult.ExitCode))
-	}
-
-	badResult, err := input.Prober.Run(ctx, probe.Opts{
-		Args: []string{"__nonexistent_subcommand__"},
-	})
-	if err != nil {
-		return ErrorResult(c, fmt.Errorf("running nonexistent subcommand: %w", err))
-	}
-	if badResult.ExitCode == 0 {
-		return FailResult(c, "nonexistent subcommand returned exit code 0; expected non-zero")
-	}
-
-	return PassResult(c, fmt.Sprintf("--help exits 0, bad subcommand exits %d", badResult.ExitCode))
-}
 
 // PV-1: Timeout flag
 
@@ -90,53 +44,6 @@ func (c *checkPV1) Run(ctx context.Context, input *Input) *Result {
 	}
 
 	return FailResult(c, "no --timeout or --request-timeout flag found")
-}
-
-// TE-5: Pagination support
-
-type checkTE5 struct {
-	BaseCheck
-}
-
-func newCheckTE5() *checkTE5 {
-	return &checkTE5{
-		BaseCheck: BaseCheck{
-			CheckID:             "TE-5",
-			CheckName:           "Pagination support",
-			CheckCategory:       CatTokenEfficiency,
-			CheckSeverity:       Warn,
-			CheckMethod:         Passive,
-			CheckRecommendation: "Support `--page-all` or NDJSON streaming for list commands to avoid silent truncation.",
-		},
-	}
-}
-
-func (c *checkTE5) Run(ctx context.Context, input *Input) *Result {
-	idx := input.GetIndex()
-	if idx == nil {
-		return SkipResult(c, "no command tree available")
-	}
-
-	listCmds := idx.ListLike()
-	if len(listCmds) == 0 {
-		return PassResult(c, "no list-like commands found")
-	}
-
-	var listCommands []string
-	var missing []string
-	for _, cmd := range listCmds {
-		fullPath := strings.Join(cmd.FullPath, " ")
-		listCommands = append(listCommands, fullPath)
-		if !idx.CmdHasFlag(cmd, paginationFlagNames...) {
-			missing = append(missing, fullPath)
-		}
-	}
-
-	if len(missing) == 0 {
-		return PassResult(c, fmt.Sprintf("all %d list-like command(s) have pagination flags", len(listCommands)))
-	}
-
-	return FailResult(c, fmt.Sprintf("list-like commands missing pagination flags: %s", strings.Join(missing, ", ")))
 }
 
 // PV-2: Retry / rate-limit hints
@@ -226,50 +133,6 @@ func (c *checkPV3) Run(ctx context.Context, input *Input) *Result {
 	}
 
 	return PassResult(c, "--help output is deterministic across two runs")
-}
-
-// TE-6: Field masks / response filtering
-
-type checkTE6 struct {
-	BaseCheck
-}
-
-func newCheckTE6() *checkTE6 {
-	return &checkTE6{
-		BaseCheck: BaseCheck{
-			CheckID:             "TE-6",
-			CheckName:           "Field masks / response filtering",
-			CheckCategory:       CatTokenEfficiency,
-			CheckSeverity:       Info,
-			CheckMethod:         Passive,
-			CheckRecommendation: "Support field masks or response filtering to limit output size and protect agent context windows.",
-		},
-	}
-}
-
-func (c *checkTE6) Run(ctx context.Context, input *Input) *Result {
-	idx := input.GetIndex()
-	if idx == nil {
-		return SkipResult(c, "no command tree available")
-	}
-
-	if idx.HasFlag(filterFlagNames...) {
-		return PassResult(c, "found field-filtering flag (e.g. --fields, --jq, --filter)")
-	}
-
-	prefixed := make([]string, len(filterFlagNames))
-	for i, name := range filterFlagNames {
-		prefixed[i] = "--" + name
-	}
-	if _, ok := idx.HelpContainsAny(prefixed...); ok {
-		return PassResult(c, "found field-filtering reference in help text")
-	}
-
-	if len(idx.ListLike()) == 0 {
-		return PassResult(c, "no data-listing commands detected; field filtering not applicable")
-	}
-
-	return FailResult(c, "no field-mask or response-filtering flags found")
 }
 
 // PV-4: Distinct exit codes for error classes
@@ -366,5 +229,3 @@ func (c *checkPV5) Run(ctx context.Context, input *Input) *Result {
 
 	return FailResult(c, "mutating commands found but no effect-reporting terms in help text")
 }
-
-

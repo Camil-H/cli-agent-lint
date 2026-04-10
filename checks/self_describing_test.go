@@ -8,6 +8,75 @@ import (
 	"github.com/Camil-H/cli-agent-lint/discovery"
 )
 
+func TestSD1_SkipNilProber(t *testing.T) {
+	check := newCheckSD1()
+	result := check.Run(context.Background(), &Input{Prober: nil})
+
+	if result.Status != StatusSkip {
+		t.Errorf("expected StatusSkip, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSD1_SkipWhenSO1NotPassed(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Flags: []*discovery.Flag{
+			{Name: "output", EnumValues: []string{"json", "text"}},
+		},
+	}
+	tree := makeTree(root)
+
+	// Create a ResultSet where TE-1 failed.
+	rs := NewResultSet()
+	rs.Set("TE-1", &Result{CheckID: "TE-1", Status: StatusFail})
+
+	// SD-1 is active but we need a prober. With nil prober it skips first.
+	// Test the cross-check logic by verifying metadata.
+	check := newCheckSD1()
+	if check.ID() != "SD-1" {
+		t.Errorf("expected ID SD-1, got %s", check.ID())
+	}
+	if check.Method() != Active {
+		t.Errorf("expected Active method, got %s", check.Method())
+	}
+
+	// With nil prober, active check is skipped.
+	result := check.Run(context.Background(), &Input{Tree: tree, Index: makeIndex(root), Prober: nil, ResultSet: rs})
+	if result.Status != StatusSkip {
+		t.Errorf("expected StatusSkip for nil prober, got %s", result.Status)
+	}
+}
+
+func TestSD1_Metadata(t *testing.T) {
+	check := newCheckSD1()
+	if check.Method() != Active {
+		t.Errorf("expected Active method, got %s", check.Method())
+	}
+	if check.Severity() != Warn {
+		t.Errorf("expected Warn severity, got %s", check.Severity())
+	}
+}
+
+func TestSD2_SkipNilProber(t *testing.T) {
+	check := newCheckSD2()
+	result := check.Run(context.Background(), &Input{Prober: nil})
+
+	if result.Status != StatusSkip {
+		t.Errorf("expected StatusSkip, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSD2_Metadata(t *testing.T) {
+	check := newCheckSD2()
+	if check.Method() != Active {
+		t.Errorf("expected Active method, got %s", check.Method())
+	}
+	if check.Severity() != Warn {
+		t.Errorf("expected Warn severity, got %s", check.Severity())
+	}
+}
+
 // SD-3: Shell completions available (passive check)
 
 func TestSD3_PassWithCompletionSubcommand(t *testing.T) {
@@ -438,95 +507,6 @@ func TestSD6_SkipNilTree(t *testing.T) {
 	}
 }
 
-// SD-7: Actionable error messages (active check)
-
-func TestSD7_SkipNilProber(t *testing.T) {
-	check := newCheckSD7()
-	result := check.Run(context.Background(), &Input{Prober: nil})
-	if result.Status != StatusSkip {
-		t.Errorf("expected skip, got %s", result.Status)
-	}
-}
-
-// SD-8: Subcommand fan-out (passive check)
-
-func TestSD8_PassFewSubcommands(t *testing.T) {
-	root := &discovery.Command{
-		Name:     "mycli",
-		FullPath: []string{"mycli"},
-		Subcommands: []*discovery.Command{
-			{Name: "list", FullPath: []string{"mycli", "list"}},
-			{Name: "create", FullPath: []string{"mycli", "create"}},
-			{Name: "delete", FullPath: []string{"mycli", "delete"}},
-		},
-	}
-	check := newCheckSD8()
-	result := check.Run(context.Background(), makeInput(root))
-	if result.Status != StatusPass {
-		t.Errorf("expected pass for 3 subcommands, got %s: %s", result.Status, result.Detail)
-	}
-}
-
-func TestSD8_FailTooManySubcommands(t *testing.T) {
-	subs := make([]*discovery.Command, 20)
-	for i := range subs {
-		name := fmt.Sprintf("cmd%d", i)
-		subs[i] = &discovery.Command{Name: name, FullPath: []string{"mycli", name}}
-	}
-	root := &discovery.Command{
-		Name:        "mycli",
-		FullPath:    []string{"mycli"},
-		Subcommands: subs,
-	}
-	check := newCheckSD8()
-	result := check.Run(context.Background(), makeInput(root))
-	if result.Status != StatusFail {
-		t.Errorf("expected fail for 20 subcommands, got %s: %s", result.Status, result.Detail)
-	}
-}
-
-func TestSD8_PassNoSubcommands(t *testing.T) {
-	root := &discovery.Command{
-		Name:     "mycli",
-		FullPath: []string{"mycli"},
-	}
-	check := newCheckSD8()
-	result := check.Run(context.Background(), makeInput(root))
-	if result.Status != StatusPass {
-		t.Errorf("expected pass for no subcommands, got %s: %s", result.Status, result.Detail)
-	}
-}
-
-func TestSD8_ChecksNestedLevels(t *testing.T) {
-	// Root has 3 subcommands, but one nested command has 20
-	bigSubs := make([]*discovery.Command, 20)
-	for i := range bigSubs {
-		name := fmt.Sprintf("sub%d", i)
-		bigSubs[i] = &discovery.Command{Name: name, FullPath: []string{"mycli", "admin", name}}
-	}
-	root := &discovery.Command{
-		Name:     "mycli",
-		FullPath: []string{"mycli"},
-		Subcommands: []*discovery.Command{
-			{Name: "list", FullPath: []string{"mycli", "list"}},
-			{Name: "admin", FullPath: []string{"mycli", "admin"}, Subcommands: bigSubs},
-		},
-	}
-	check := newCheckSD8()
-	result := check.Run(context.Background(), makeInput(root))
-	if result.Status != StatusFail {
-		t.Errorf("expected fail for nested 20 subcommands, got %s: %s", result.Status, result.Detail)
-	}
-}
-
-func TestSD8_SkipNilTree(t *testing.T) {
-	check := newCheckSD8()
-	result := check.Run(context.Background(), &Input{Tree: nil})
-	if result.Status != StatusSkip {
-		t.Errorf("expected skip, got %s", result.Status)
-	}
-}
-
 func TestSD6_PassWithExamplesSection(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
@@ -613,5 +593,94 @@ func TestSD6_FailNoExamples(t *testing.T) {
 
 	if result.Status != StatusFail {
 		t.Errorf("expected Fail, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+// SD-7: Actionable error messages (active check)
+
+func TestSD7_SkipNilProber(t *testing.T) {
+	check := newCheckSD7()
+	result := check.Run(context.Background(), &Input{Prober: nil})
+	if result.Status != StatusSkip {
+		t.Errorf("expected skip, got %s", result.Status)
+	}
+}
+
+// SD-8: Subcommand fan-out (passive check)
+
+func TestSD8_PassFewSubcommands(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{Name: "list", FullPath: []string{"mycli", "list"}},
+			{Name: "create", FullPath: []string{"mycli", "create"}},
+			{Name: "delete", FullPath: []string{"mycli", "delete"}},
+		},
+	}
+	check := newCheckSD8()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusPass {
+		t.Errorf("expected pass for 3 subcommands, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSD8_FailTooManySubcommands(t *testing.T) {
+	subs := make([]*discovery.Command, 20)
+	for i := range subs {
+		name := fmt.Sprintf("cmd%d", i)
+		subs[i] = &discovery.Command{Name: name, FullPath: []string{"mycli", name}}
+	}
+	root := &discovery.Command{
+		Name:        "mycli",
+		FullPath:    []string{"mycli"},
+		Subcommands: subs,
+	}
+	check := newCheckSD8()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusFail {
+		t.Errorf("expected fail for 20 subcommands, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSD8_PassNoSubcommands(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+	}
+	check := newCheckSD8()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusPass {
+		t.Errorf("expected pass for no subcommands, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSD8_ChecksNestedLevels(t *testing.T) {
+	// Root has 3 subcommands, but one nested command has 20
+	bigSubs := make([]*discovery.Command, 20)
+	for i := range bigSubs {
+		name := fmt.Sprintf("sub%d", i)
+		bigSubs[i] = &discovery.Command{Name: name, FullPath: []string{"mycli", "admin", name}}
+	}
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{Name: "list", FullPath: []string{"mycli", "list"}},
+			{Name: "admin", FullPath: []string{"mycli", "admin"}, Subcommands: bigSubs},
+		},
+	}
+	check := newCheckSD8()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusFail {
+		t.Errorf("expected fail for nested 20 subcommands, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSD8_SkipNilTree(t *testing.T) {
+	check := newCheckSD8()
+	result := check.Run(context.Background(), &Input{Tree: nil})
+	if result.Status != StatusSkip {
+		t.Errorf("expected skip, got %s", result.Status)
 	}
 }

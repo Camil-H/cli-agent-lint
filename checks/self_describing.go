@@ -2,6 +2,7 @@ package checks
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -11,6 +12,153 @@ import (
 	"github.com/Camil-H/cli-agent-lint/discovery"
 	"github.com/Camil-H/cli-agent-lint/probe"
 )
+
+// SD-1: Error format is structured
+
+type checkSD1 struct {
+	BaseCheck
+}
+
+func newCheckSD1() *checkSD1 {
+	return &checkSD1{
+		BaseCheck: BaseCheck{
+			CheckID:             "SD-1",
+			CheckName:           "Error format is structured",
+			CheckCategory:       CatSelfDescribing,
+			CheckSeverity:       Warn,
+			CheckMethod:         Active,
+			CheckRecommendation: "Emit structured JSON errors to stderr when `--output json` is set.",
+		},
+	}
+}
+
+func (c *checkSD1) Run(ctx context.Context, input *Input) *Result {
+	if r := skipIfNoProber(c, input); r != nil {
+		return r
+	}
+
+	// Cross-check dependency: TE-1 must have passed.
+	so1Result := input.ResultSet.Get("TE-1")
+	if so1Result == nil || so1Result.Status != StatusPass {
+		return SkipResult(c, "skipped: no JSON output flag detected (TE-1 not passed)")
+	}
+
+	flag, _ := findJSONOutputFlag(input.GetIndex())
+	if flag == nil {
+		return SkipResult(c, "skipped: could not locate JSON output flag in command tree")
+	}
+
+	flagArg := buildJSONFlagArg(flag)
+
+	args := []string{flagArg, "__nonexistent__"}
+	argParts := strings.SplitN(flagArg, " ", 2)
+	if len(argParts) == 2 {
+		args = []string{argParts[0], argParts[1], "__nonexistent__"}
+	}
+
+	result, err := input.Prober.Run(ctx, probe.Opts{
+		Args: args,
+	})
+	if err != nil {
+		return ErrorResult(c, fmt.Errorf("running with JSON flag: %w", err))
+	}
+
+	stderr := result.StderrStr()
+	if stderr == "" {
+		return FailResult(c, "no stderr output when running with JSON flag and invalid subcommand")
+	}
+
+	var parsed map[string]interface{}
+	if err := json.Unmarshal([]byte(stderr), &parsed); err != nil {
+		return FailResult(c, fmt.Sprintf("stderr is not valid JSON: %s", truncate(stderr, 200)))
+	}
+
+	_, hasError := parsed["error"]
+	_, hasMessage := parsed["message"]
+	if hasError || hasMessage {
+		return PassResult(c, "stderr contains structured JSON error with error/message field")
+	}
+
+	return FailResult(c, fmt.Sprintf("stderr is valid JSON but lacks 'error' or 'message' field: %s", truncate(stderr, 200)))
+}
+
+// buildJSONFlagArg returns the CLI argument to enable JSON output,
+// e.g. "--output=json", "--format=json", or "--json".
+func buildJSONFlagArg(f *discovery.Flag) string {
+	switch f.Name {
+	case "json":
+		return "--json"
+	default:
+		return fmt.Sprintf("--%s=json", f.Name)
+	}
+}
+
+// SD-2: Version output is parseable
+
+type checkSD2 struct {
+	BaseCheck
+}
+
+func newCheckSD2() *checkSD2 {
+	return &checkSD2{
+		BaseCheck: BaseCheck{
+			CheckID:             "SD-2",
+			CheckName:           "Version output is parseable",
+			CheckCategory:       CatSelfDescribing,
+			CheckSeverity:       Warn,
+			CheckMethod:         Active,
+			CheckRecommendation: "Emit a clean semver string from `--version`. Support `--output json` for `{\"version\": \"x.y.z\"}`.",
+		},
+	}
+}
+
+var semverRe = regexp.MustCompile(`v?(\d+\.\d+\.\d+)(?:[-+][a-zA-Z0-9.]+)*`)
+var versionWordRe = regexp.MustCompile(`(?i)\bversion\b`)
+
+func (c *checkSD2) Run(ctx context.Context, input *Input) *Result {
+	if r := skipIfNoProber(c, input); r != nil {
+		return r
+	}
+
+	result, err := input.Prober.Run(ctx, probe.Opts{
+		Args: []string{"--version"},
+	})
+	if err != nil {
+		return ErrorResult(c, fmt.Errorf("running --version: %w", err))
+	}
+
+	output := result.StdoutStr()
+	if output == "" {
+		output = result.StderrStr()
+	}
+	if output == "" {
+		return FailResult(c, "--version produced no output")
+	}
+
+	match := semverRe.FindString(output)
+	if match == "" {
+		return FailResult(c, fmt.Sprintf("no semver pattern found in --version output: %q", truncate(output, 200)))
+	}
+
+	cleaned := output
+	cleaned = strings.Replace(cleaned, match, "", 1)
+
+	if input.Tree != nil && input.Tree.Root != nil {
+		progName := input.Tree.Root.Name
+		cleaned = strings.ReplaceAll(cleaned, progName, "")
+	}
+
+	cleaned = strings.TrimSpace(cleaned)
+	cleaned = strings.Trim(cleaned, "/ \t\n\r")
+	cleaned = versionWordRe.ReplaceAllString(cleaned, "")
+	cleaned = strings.TrimSpace(cleaned)
+
+	if cleaned == "" {
+		return PassResult(c, match)
+	}
+
+	return FailResult(c, fmt.Sprintf("version output contains decorative text beyond semver: %q (extracted: %s)", truncate(output, 200), match))
+}
 
 // SD-3: Shell completions available
 
