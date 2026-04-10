@@ -96,8 +96,6 @@ func TestJSONFormat_ScoreFields(t *testing.T) {
 
 	var parsed struct {
 		Score struct {
-			Earned     int     `json:"earned"`
-			Total      int     `json:"total"`
 			Percentage float64 `json:"percentage"`
 			Grade      string  `json:"grade"`
 		} `json:"score"`
@@ -106,12 +104,6 @@ func TestJSONFormat_ScoreFields(t *testing.T) {
 		t.Fatalf("failed to unmarshal JSON: %v", err)
 	}
 
-	if parsed.Score.Earned != r.TotalEarned {
-		t.Errorf("score.earned: got %d, want %d", parsed.Score.Earned, r.TotalEarned)
-	}
-	if parsed.Score.Total != r.TotalPossible {
-		t.Errorf("score.total: got %d, want %d", parsed.Score.Total, r.TotalPossible)
-	}
 	if parsed.Score.Percentage != r.Percent {
 		t.Errorf("score.percentage: got %.2f, want %.2f", parsed.Score.Percentage, r.Percent)
 	}

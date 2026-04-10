@@ -148,8 +148,8 @@ func (f *TextFormatter) writeScore(w io.Writer, r *Report, p palette) {
 		gradeColor = p.red
 	}
 
-	fmt.Fprintf(w, "Score: %d/%d (%.0f%%) %s%sGrade: %s — %s%s\n",
-		r.TotalEarned, r.TotalPossible, r.Percent,
+	fmt.Fprintf(w, "Score: %.0f%% %s%sGrade: %s — %s%s\n",
+		r.Percent,
 		gradeColor, p.bold, r.Grade, GradeLabel(r.Grade), p.reset)
 }
 

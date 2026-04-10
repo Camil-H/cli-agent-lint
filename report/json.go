@@ -21,8 +21,6 @@ type jsonReport struct {
 }
 
 type jsonScore struct {
-	Earned     int     `json:"earned"`
-	Total      int     `json:"total"`
 	Percentage float64 `json:"percentage"`
 	Grade      string  `json:"grade"`
 }
@@ -65,8 +63,6 @@ func (f *JSONFormatter) Format(w io.Writer, r *Report) error {
 		Timestamp:  r.Timestamp.UTC().Format("2006-01-02T15:04:05Z"),
 		DurationMs: r.Duration.Milliseconds(),
 		Score: jsonScore{
-			Earned:     r.TotalEarned,
-			Total:      r.TotalPossible,
 			Percentage: r.Percent,
 			Grade:      string(r.Grade),
 		},
