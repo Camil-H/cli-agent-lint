@@ -7,12 +7,10 @@ import (
 	"github.com/cli-agent-lint/cli-agent-lint/discovery"
 )
 
-// ---------------------------------------------------------------------------
-// IV-1: Rejects path traversal (active check)
-// ---------------------------------------------------------------------------
+// SA-2: Rejects path traversal (active check)
 
-func TestIV1_SkipNilProber(t *testing.T) {
-	check := newCheckIV1()
+func TestSA2_SkipNilProber(t *testing.T) {
+	check := newCheckSA2()
 	result := check.Run(context.Background(), &Input{
 		Prober: nil,
 		Tree:   makeTree(&discovery.Command{Name: "mycli", FullPath: []string{"mycli"}}),
@@ -26,18 +24,18 @@ func TestIV1_SkipNilProber(t *testing.T) {
 	}
 }
 
-func TestIV1_Metadata(t *testing.T) {
-	check := newCheckIV1()
+func TestSA2_Metadata(t *testing.T) {
+	check := newCheckSA2()
 
 	t.Run("ID", func(t *testing.T) {
-		if check.ID() != "IV-1" {
-			t.Errorf("expected IV-1, got %s", check.ID())
+		if check.ID() != "SA-2" {
+			t.Errorf("expected SA-2, got %s", check.ID())
 		}
 	})
 
 	t.Run("Category", func(t *testing.T) {
-		if check.Category() != CatInputValidation {
-			t.Errorf("expected input-validation, got %s", check.Category())
+		if check.Category() != CatAutomationSafety {
+			t.Errorf("expected automation-safety, got %s", check.Category())
 		}
 	})
 
@@ -234,12 +232,10 @@ func TestFileArgFlag(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
-// IV-2: Rejects control characters (active check)
-// ---------------------------------------------------------------------------
+// SA-3: Rejects control characters (active check)
 
-func TestIV2_SkipNilProber(t *testing.T) {
-	check := newCheckIV2()
+func TestSA3_SkipNilProber(t *testing.T) {
+	check := newCheckSA3()
 	result := check.Run(context.Background(), &Input{
 		Prober: nil,
 		Tree:   makeTree(&discovery.Command{Name: "mycli", FullPath: []string{"mycli"}}),
@@ -250,11 +246,11 @@ func TestIV2_SkipNilProber(t *testing.T) {
 	}
 }
 
-func TestIV2_Metadata(t *testing.T) {
-	check := newCheckIV2()
+func TestSA3_Metadata(t *testing.T) {
+	check := newCheckSA3()
 
-	if check.ID() != "IV-2" {
-		t.Errorf("expected IV-2, got %s", check.ID())
+	if check.ID() != "SA-3" {
+		t.Errorf("expected SA-3, got %s", check.ID())
 	}
 	if check.Severity() != Warn {
 		t.Errorf("expected Warn, got %s", check.Severity())
@@ -333,11 +329,9 @@ func TestFindStringInputCommand(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
-// IV-3: Dry-run support (passive check)
-// ---------------------------------------------------------------------------
+// SA-4: Dry-run support (passive check)
 
-func TestIV3_PassNoMutatingCommands(t *testing.T) {
+func TestSA4_PassNoMutatingCommands(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -347,7 +341,7 @@ func TestIV3_PassNoMutatingCommands(t *testing.T) {
 		},
 	}
 
-	check := newCheckIV3()
+	check := newCheckSA4()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -355,7 +349,7 @@ func TestIV3_PassNoMutatingCommands(t *testing.T) {
 	}
 }
 
-func TestIV3_PassAllMutatingHaveDryRun(t *testing.T) {
+func TestSA4_PassAllMutatingHaveDryRun(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -379,7 +373,7 @@ func TestIV3_PassAllMutatingHaveDryRun(t *testing.T) {
 		},
 	}
 
-	check := newCheckIV3()
+	check := newCheckSA4()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -387,7 +381,7 @@ func TestIV3_PassAllMutatingHaveDryRun(t *testing.T) {
 	}
 }
 
-func TestIV3_FailMissingDryRun(t *testing.T) {
+func TestSA4_FailMissingDryRun(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -411,7 +405,7 @@ func TestIV3_FailMissingDryRun(t *testing.T) {
 		},
 	}
 
-	check := newCheckIV3()
+	check := newCheckSA4()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusFail {
@@ -419,7 +413,7 @@ func TestIV3_FailMissingDryRun(t *testing.T) {
 	}
 }
 
-func TestIV3_PassWithAlternateDryRunNames(t *testing.T) {
+func TestSA4_PassWithAlternateDryRunNames(t *testing.T) {
 	alternateNames := []string{"dryrun", "whatif", "simulate", "dry_run"}
 
 	for _, flagName := range alternateNames {
@@ -439,7 +433,7 @@ func TestIV3_PassWithAlternateDryRunNames(t *testing.T) {
 				},
 			}
 
-			check := newCheckIV3()
+			check := newCheckSA4()
 			result := check.Run(context.Background(), makeInput(root))
 
 			if result.Status != StatusPass {
@@ -449,14 +443,14 @@ func TestIV3_PassWithAlternateDryRunNames(t *testing.T) {
 	}
 }
 
-func TestIV3_Metadata(t *testing.T) {
-	check := newCheckIV3()
+func TestSA4_Metadata(t *testing.T) {
+	check := newCheckSA4()
 
-	if check.ID() != "IV-3" {
-		t.Errorf("expected IV-3, got %s", check.ID())
+	if check.ID() != "SA-4" {
+		t.Errorf("expected SA-4, got %s", check.ID())
 	}
-	if check.Category() != CatInputValidation {
-		t.Errorf("expected input-validation, got %s", check.Category())
+	if check.Category() != CatAutomationSafety {
+		t.Errorf("expected automation-safety, got %s", check.Category())
 	}
 	if check.Severity() != Warn {
 		t.Errorf("expected Warn, got %s", check.Severity())

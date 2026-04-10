@@ -20,9 +20,9 @@ func makeResult(id string, cat checks.Category, sev checks.Severity, status chec
 
 func TestNewReport_AllPasses(t *testing.T) {
 	results := []*checks.Result{
-		makeResult("A1", checks.CatStructuredOutput, checks.Fail, checks.StatusPass),
-		makeResult("A2", checks.CatStructuredOutput, checks.Warn, checks.StatusPass),
-		makeResult("A3", checks.CatTerminalHygiene, checks.Info, checks.StatusPass),
+		makeResult("A1", checks.CatTokenEfficiency, checks.Fail, checks.StatusPass),
+		makeResult("A2", checks.CatTokenEfficiency, checks.Warn, checks.StatusPass),
+		makeResult("A3", checks.CatFlowSafety, checks.Info, checks.StatusPass),
 	}
 
 	r := NewReport(results, "/bin/test", "1.0.0", 100*time.Millisecond)
@@ -45,9 +45,9 @@ func TestNewReport_AllPasses(t *testing.T) {
 
 func TestNewReport_AllFails(t *testing.T) {
 	results := []*checks.Result{
-		makeResult("B1", checks.CatStructuredOutput, checks.Fail, checks.StatusFail),
-		makeResult("B2", checks.CatTerminalHygiene, checks.Warn, checks.StatusFail),
-		makeResult("B3", checks.CatInputValidation, checks.Info, checks.StatusFail),
+		makeResult("B1", checks.CatTokenEfficiency, checks.Fail, checks.StatusFail),
+		makeResult("B2", checks.CatFlowSafety, checks.Warn, checks.StatusFail),
+		makeResult("B3", checks.CatAutomationSafety, checks.Info, checks.StatusFail),
 	}
 
 	r := NewReport(results, "/bin/test", "", 50*time.Millisecond)
@@ -66,10 +66,10 @@ func TestNewReport_AllFails(t *testing.T) {
 func TestNewReport_Mixed(t *testing.T) {
 	results := []*checks.Result{
 		// 2 pass (Fail sev = 3 pts each) → 6 earned
-		makeResult("C1", checks.CatStructuredOutput, checks.Fail, checks.StatusPass),
-		makeResult("C2", checks.CatStructuredOutput, checks.Fail, checks.StatusPass),
+		makeResult("C1", checks.CatTokenEfficiency, checks.Fail, checks.StatusPass),
+		makeResult("C2", checks.CatTokenEfficiency, checks.Fail, checks.StatusPass),
 		// 1 fail (Fail sev = 3 pts possible) → 0 earned
-		makeResult("C3", checks.CatTerminalHygiene, checks.Fail, checks.StatusFail),
+		makeResult("C3", checks.CatFlowSafety, checks.Fail, checks.StatusFail),
 	}
 
 	r := NewReport(results, "/bin/test", "", time.Second)
@@ -87,9 +87,9 @@ func TestNewReport_Mixed(t *testing.T) {
 
 func TestNewReport_SkippedExcludedFromPossible(t *testing.T) {
 	results := []*checks.Result{
-		makeResult("D1", checks.CatStructuredOutput, checks.Fail, checks.StatusPass),  // 3/3
-		makeResult("D2", checks.CatStructuredOutput, checks.Fail, checks.StatusSkip),  // 0/0 (excluded)
-		makeResult("D3", checks.CatTerminalHygiene, checks.Warn, checks.StatusPass),   // 2/2
+		makeResult("D1", checks.CatTokenEfficiency, checks.Fail, checks.StatusPass),  // 3/3
+		makeResult("D2", checks.CatTokenEfficiency, checks.Fail, checks.StatusSkip),  // 0/0 (excluded)
+		makeResult("D3", checks.CatFlowSafety, checks.Warn, checks.StatusPass),   // 2/2
 	}
 
 	r := NewReport(results, "/bin/test", "", time.Second)
@@ -109,8 +109,8 @@ func TestNewReport_SkippedExcludedFromPossible(t *testing.T) {
 
 func TestHasCriticalFailures_True(t *testing.T) {
 	results := []*checks.Result{
-		makeResult("E1", checks.CatStructuredOutput, checks.Fail, checks.StatusPass),
-		makeResult("E2", checks.CatStructuredOutput, checks.Fail, checks.StatusFail), // critical fail
+		makeResult("E1", checks.CatTokenEfficiency, checks.Fail, checks.StatusPass),
+		makeResult("E2", checks.CatTokenEfficiency, checks.Fail, checks.StatusFail), // critical fail
 	}
 
 	r := NewReport(results, "/bin/test", "", time.Second)
@@ -122,8 +122,8 @@ func TestHasCriticalFailures_True(t *testing.T) {
 
 func TestHasCriticalFailures_False_AllPass(t *testing.T) {
 	results := []*checks.Result{
-		makeResult("F1", checks.CatStructuredOutput, checks.Fail, checks.StatusPass),
-		makeResult("F2", checks.CatStructuredOutput, checks.Warn, checks.StatusPass),
+		makeResult("F1", checks.CatTokenEfficiency, checks.Fail, checks.StatusPass),
+		makeResult("F2", checks.CatTokenEfficiency, checks.Warn, checks.StatusPass),
 	}
 
 	r := NewReport(results, "/bin/test", "", time.Second)
@@ -135,8 +135,8 @@ func TestHasCriticalFailures_False_AllPass(t *testing.T) {
 
 func TestHasCriticalFailures_False_WarnOnly(t *testing.T) {
 	results := []*checks.Result{
-		makeResult("G1", checks.CatStructuredOutput, checks.Warn, checks.StatusFail), // warn sev, not critical
-		makeResult("G2", checks.CatStructuredOutput, checks.Fail, checks.StatusPass),
+		makeResult("G1", checks.CatTokenEfficiency, checks.Warn, checks.StatusFail), // warn sev, not critical
+		makeResult("G2", checks.CatTokenEfficiency, checks.Fail, checks.StatusPass),
 	}
 
 	r := NewReport(results, "/bin/test", "", time.Second)
@@ -148,7 +148,7 @@ func TestHasCriticalFailures_False_WarnOnly(t *testing.T) {
 
 func TestHasCriticalFailures_False_SkippedCritical(t *testing.T) {
 	results := []*checks.Result{
-		makeResult("H1", checks.CatStructuredOutput, checks.Fail, checks.StatusSkip), // skipped, not a failure
+		makeResult("H1", checks.CatTokenEfficiency, checks.Fail, checks.StatusSkip), // skipped, not a failure
 	}
 
 	r := NewReport(results, "/bin/test", "", time.Second)
@@ -160,11 +160,11 @@ func TestHasCriticalFailures_False_SkippedCritical(t *testing.T) {
 
 func TestGetSummary(t *testing.T) {
 	results := []*checks.Result{
-		makeResult("S1", checks.CatStructuredOutput, checks.Fail, checks.StatusPass),
-		makeResult("S2", checks.CatStructuredOutput, checks.Fail, checks.StatusFail),
-		makeResult("S3", checks.CatTerminalHygiene, checks.Warn, checks.StatusFail),
-		makeResult("S4", checks.CatTerminalHygiene, checks.Info, checks.StatusSkip),
-		makeResult("S5", checks.CatInputValidation, checks.Fail, checks.StatusPass),
+		makeResult("S1", checks.CatTokenEfficiency, checks.Fail, checks.StatusPass),
+		makeResult("S2", checks.CatTokenEfficiency, checks.Fail, checks.StatusFail),
+		makeResult("S3", checks.CatFlowSafety, checks.Warn, checks.StatusFail),
+		makeResult("S4", checks.CatFlowSafety, checks.Info, checks.StatusSkip),
+		makeResult("S5", checks.CatAutomationSafety, checks.Fail, checks.StatusPass),
 	}
 
 	r := NewReport(results, "/bin/test", "", time.Second)
@@ -231,9 +231,9 @@ func TestNewReport_NoResults(t *testing.T) {
 
 func TestNewReport_Categories(t *testing.T) {
 	results := []*checks.Result{
-		makeResult("K1", checks.CatStructuredOutput, checks.Fail, checks.StatusPass),
-		makeResult("K2", checks.CatTerminalHygiene, checks.Fail, checks.StatusFail),
-		makeResult("K3", checks.CatTerminalHygiene, checks.Warn, checks.StatusPass),
+		makeResult("K1", checks.CatTokenEfficiency, checks.Fail, checks.StatusPass),
+		makeResult("K2", checks.CatFlowSafety, checks.Fail, checks.StatusFail),
+		makeResult("K3", checks.CatFlowSafety, checks.Warn, checks.StatusPass),
 	}
 
 	r := NewReport(results, "/bin/test", "", time.Second)
@@ -242,23 +242,23 @@ func TestNewReport_Categories(t *testing.T) {
 		t.Fatalf("expected 2 categories, got %d", len(r.Categories))
 	}
 
-	// First category should be structured-output (sorted by AllCategories order).
-	if r.Categories[0].Category != checks.CatStructuredOutput {
-		t.Errorf("expected first category to be structured-output, got %s", r.Categories[0].Category)
+	// First category should be flow-safety (sorted by AllCategories order).
+	if r.Categories[0].Category != checks.CatFlowSafety {
+		t.Errorf("expected first category to be flow-safety, got %s", r.Categories[0].Category)
 	}
-	if r.Categories[0].Percent != 100 {
-		t.Errorf("expected structured-output at 100%%, got %.2f%%", r.Categories[0].Percent)
+	if r.Categories[0].Earned != 2 {
+		t.Errorf("expected flow-safety earned=2, got %d", r.Categories[0].Earned)
+	}
+	if r.Categories[0].Possible != 5 {
+		t.Errorf("expected flow-safety possible=5, got %d", r.Categories[0].Possible)
 	}
 
-	// Second category: terminal-hygiene. 2 earned (warn pass) / 5 possible (fail+warn) = 40%
-	if r.Categories[1].Category != checks.CatTerminalHygiene {
-		t.Errorf("expected second category to be terminal-hygiene, got %s", r.Categories[1].Category)
+	// Second category: token-efficiency. 3 earned / 3 possible = 100%
+	if r.Categories[1].Category != checks.CatTokenEfficiency {
+		t.Errorf("expected second category to be token-efficiency, got %s", r.Categories[1].Category)
 	}
-	if r.Categories[1].Earned != 2 {
-		t.Errorf("expected terminal-hygiene earned=2, got %d", r.Categories[1].Earned)
-	}
-	if r.Categories[1].Possible != 5 {
-		t.Errorf("expected terminal-hygiene possible=5, got %d", r.Categories[1].Possible)
+	if r.Categories[1].Percent != 100 {
+		t.Errorf("expected token-efficiency at 100%%, got %.2f%%", r.Categories[1].Percent)
 	}
 }
 
@@ -283,10 +283,10 @@ func TestGradeLabel(t *testing.T) {
 
 func TestAttentionCount(t *testing.T) {
 	results := []*checks.Result{
-		makeResult("AC1", checks.CatStructuredOutput, checks.Fail, checks.StatusPass),
-		makeResult("AC2", checks.CatStructuredOutput, checks.Fail, checks.StatusFail),
-		makeResult("AC3", checks.CatTerminalHygiene, checks.Warn, checks.StatusFail),
-		makeResult("AC4", checks.CatTerminalHygiene, checks.Info, checks.StatusSkip),
+		makeResult("AC1", checks.CatTokenEfficiency, checks.Fail, checks.StatusPass),
+		makeResult("AC2", checks.CatTokenEfficiency, checks.Fail, checks.StatusFail),
+		makeResult("AC3", checks.CatFlowSafety, checks.Warn, checks.StatusFail),
+		makeResult("AC4", checks.CatFlowSafety, checks.Info, checks.StatusSkip),
 	}
 
 	r := NewReport(results, "/bin/test", "", time.Second)

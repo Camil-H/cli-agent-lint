@@ -113,7 +113,7 @@ func (r *Runner) Run(ctx context.Context, progressFn ProgressFunc) (*report.Repo
 	wg.Wait()
 
 	// Active checks run after passive ones so cross-check dependencies
-	// (e.g., SO-3 reads SO-1) are already satisfied.
+	// (e.g., SD-1 reads TE-1) are already satisfied.
 	concurrency := r.cfg.Concurrency
 	if concurrency <= 0 {
 		concurrency = max(4, runtime.NumCPU())
@@ -135,7 +135,7 @@ func (r *Runner) Run(ctx context.Context, progressFn ProgressFunc) (*report.Repo
 	duration := time.Since(start)
 
 	var version string
-	if so4 := resultSet.Get("SO-4"); so4 != nil && so4.Status == checks.StatusPass {
+	if so4 := resultSet.Get("SD-2"); so4 != nil && so4.Status == checks.StatusPass {
 		version = so4.Detail
 	}
 

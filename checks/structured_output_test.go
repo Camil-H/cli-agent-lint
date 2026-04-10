@@ -25,7 +25,7 @@ func makeInput(root *discovery.Command) *Input {
 	return &Input{Tree: tree, Index: idx}
 }
 
-func TestSO1_PassWithOutputJsonFlag(t *testing.T) {
+func TestTE1_PassWithOutputJsonFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -34,7 +34,7 @@ func TestSO1_PassWithOutputJsonFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckSO1()
+	check := newCheckTE1()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -42,7 +42,7 @@ func TestSO1_PassWithOutputJsonFlag(t *testing.T) {
 	}
 }
 
-func TestSO1_PassWithFormatFlag(t *testing.T) {
+func TestTE1_PassWithFormatFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -51,7 +51,7 @@ func TestSO1_PassWithFormatFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckSO1()
+	check := newCheckTE1()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -59,7 +59,7 @@ func TestSO1_PassWithFormatFlag(t *testing.T) {
 	}
 }
 
-func TestSO1_PassWithJsonFlag(t *testing.T) {
+func TestTE1_PassWithJsonFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -68,7 +68,7 @@ func TestSO1_PassWithJsonFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckSO1()
+	check := newCheckTE1()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -76,7 +76,7 @@ func TestSO1_PassWithJsonFlag(t *testing.T) {
 	}
 }
 
-func TestSO1_PassWithJsonFlagOnSubcommand(t *testing.T) {
+func TestTE1_PassWithJsonFlagOnSubcommand(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -91,7 +91,7 @@ func TestSO1_PassWithJsonFlagOnSubcommand(t *testing.T) {
 		},
 	}
 
-	check := newCheckSO1()
+	check := newCheckTE1()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -99,7 +99,7 @@ func TestSO1_PassWithJsonFlagOnSubcommand(t *testing.T) {
 	}
 }
 
-func TestSO1_FailNoJsonFlag(t *testing.T) {
+func TestTE1_FailNoJsonFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -108,7 +108,7 @@ func TestSO1_FailNoJsonFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckSO1()
+	check := newCheckTE1()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusFail {
@@ -116,8 +116,8 @@ func TestSO1_FailNoJsonFlag(t *testing.T) {
 	}
 }
 
-func TestSO1_SkipNilTree(t *testing.T) {
-	check := newCheckSO1()
+func TestTE1_SkipNilTree(t *testing.T) {
+	check := newCheckTE1()
 	result := check.Run(context.Background(), &Input{Tree: nil})
 
 	if result.Status != StatusSkip {
@@ -125,8 +125,8 @@ func TestSO1_SkipNilTree(t *testing.T) {
 	}
 }
 
-func TestSO2_SkipNilProber(t *testing.T) {
-	check := newCheckSO2()
+func TestFS1_SkipNilProber(t *testing.T) {
+	check := newCheckFS1()
 	result := check.Run(context.Background(), &Input{Prober: nil})
 
 	if result.Status != StatusSkip {
@@ -137,8 +137,8 @@ func TestSO2_SkipNilProber(t *testing.T) {
 	}
 }
 
-func TestSO3_SkipNilProber(t *testing.T) {
-	check := newCheckSO3()
+func TestSD1_SkipNilProber(t *testing.T) {
+	check := newCheckSD1()
 	result := check.Run(context.Background(), &Input{Prober: nil})
 
 	if result.Status != StatusSkip {
@@ -146,7 +146,7 @@ func TestSO3_SkipNilProber(t *testing.T) {
 	}
 }
 
-func TestSO3_SkipWhenSO1NotPassed(t *testing.T) {
+func TestSD1_SkipWhenSO1NotPassed(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -156,15 +156,15 @@ func TestSO3_SkipWhenSO1NotPassed(t *testing.T) {
 	}
 	tree := makeTree(root)
 
-	// Create a ResultSet where SO-1 failed.
+	// Create a ResultSet where TE-1 failed.
 	rs := NewResultSet()
-	rs.Set("SO-1", &Result{CheckID: "SO-1", Status: StatusFail})
+	rs.Set("TE-1", &Result{CheckID: "TE-1", Status: StatusFail})
 
-	// SO-3 is active but we need a prober. With nil prober it skips first.
+	// SD-1 is active but we need a prober. With nil prober it skips first.
 	// Test the cross-check logic by verifying metadata.
-	check := newCheckSO3()
-	if check.ID() != "SO-3" {
-		t.Errorf("expected ID SO-3, got %s", check.ID())
+	check := newCheckSD1()
+	if check.ID() != "SD-1" {
+		t.Errorf("expected ID SD-1, got %s", check.ID())
 	}
 	if check.Method() != Active {
 		t.Errorf("expected Active method, got %s", check.Method())
@@ -177,8 +177,8 @@ func TestSO3_SkipWhenSO1NotPassed(t *testing.T) {
 	}
 }
 
-func TestSO4_SkipNilProber(t *testing.T) {
-	check := newCheckSO4()
+func TestSD2_SkipNilProber(t *testing.T) {
+	check := newCheckSD2()
 	result := check.Run(context.Background(), &Input{Prober: nil})
 
 	if result.Status != StatusSkip {
@@ -186,12 +186,12 @@ func TestSO4_SkipNilProber(t *testing.T) {
 	}
 }
 
-func TestSO1_Metadata(t *testing.T) {
-	check := newCheckSO1()
+func TestTE1_Metadata(t *testing.T) {
+	check := newCheckTE1()
 
 	t.Run("ID", func(t *testing.T) {
-		if check.ID() != "SO-1" {
-			t.Errorf("expected SO-1, got %s", check.ID())
+		if check.ID() != "TE-1" {
+			t.Errorf("expected TE-1, got %s", check.ID())
 		}
 	})
 
@@ -202,8 +202,8 @@ func TestSO1_Metadata(t *testing.T) {
 	})
 
 	t.Run("Category", func(t *testing.T) {
-		if check.Category() != CatStructuredOutput {
-			t.Errorf("unexpected category: %s", check.Category())
+		if check.Category() != CatTokenEfficiency {
+			t.Errorf("expected token-efficiency, got %s", check.Category())
 		}
 	})
 
@@ -220,8 +220,8 @@ func TestSO1_Metadata(t *testing.T) {
 	})
 }
 
-func TestSO2_Metadata(t *testing.T) {
-	check := newCheckSO2()
+func TestFS1_Metadata(t *testing.T) {
+	check := newCheckFS1()
 	if check.Method() != Active {
 		t.Errorf("expected Active method, got %s", check.Method())
 	}
@@ -230,8 +230,8 @@ func TestSO2_Metadata(t *testing.T) {
 	}
 }
 
-func TestSO3_Metadata(t *testing.T) {
-	check := newCheckSO3()
+func TestSD1_Metadata(t *testing.T) {
+	check := newCheckSD1()
 	if check.Method() != Active {
 		t.Errorf("expected Active method, got %s", check.Method())
 	}
@@ -240,8 +240,8 @@ func TestSO3_Metadata(t *testing.T) {
 	}
 }
 
-func TestSO4_Metadata(t *testing.T) {
-	check := newCheckSO4()
+func TestSD2_Metadata(t *testing.T) {
+	check := newCheckSD2()
 	if check.Method() != Active {
 		t.Errorf("expected Active method, got %s", check.Method())
 	}
@@ -250,7 +250,7 @@ func TestSO4_Metadata(t *testing.T) {
 	}
 }
 
-func TestSO1_PassWithShortOFlag(t *testing.T) {
+func TestTE1_PassWithShortOFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -259,7 +259,7 @@ func TestSO1_PassWithShortOFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckSO1()
+	check := newCheckTE1()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -288,18 +288,16 @@ func TestBuildJSONFlagArg(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// SO-5: Stdin/pipe input support (passive check)
-// ---------------------------------------------------------------------------
+// TE-2: Stdin/pipe input support (passive check)
 
-func TestSO5_Metadata(t *testing.T) {
-	check := newCheckSO5()
+func TestTE2_Metadata(t *testing.T) {
+	check := newCheckTE2()
 
-	if check.ID() != "SO-5" {
-		t.Errorf("expected SO-5, got %s", check.ID())
+	if check.ID() != "TE-2" {
+		t.Errorf("expected TE-2, got %s", check.ID())
 	}
-	if check.Category() != CatStructuredOutput {
-		t.Errorf("expected structured-output, got %s", check.Category())
+	if check.Category() != CatTokenEfficiency {
+		t.Errorf("expected token-efficiency, got %s", check.Category())
 	}
 	if check.Severity() != Info {
 		t.Errorf("expected Info, got %s", check.Severity())
@@ -309,8 +307,8 @@ func TestSO5_Metadata(t *testing.T) {
 	}
 }
 
-func TestSO5_SkipNilTree(t *testing.T) {
-	check := newCheckSO5()
+func TestTE2_SkipNilTree(t *testing.T) {
+	check := newCheckTE2()
 	result := check.Run(context.Background(), &Input{Tree: nil})
 
 	if result.Status != StatusSkip {
@@ -318,7 +316,7 @@ func TestSO5_SkipNilTree(t *testing.T) {
 	}
 }
 
-func TestSO5_PassWithFromFileFlag(t *testing.T) {
+func TestTE2_PassWithFromFileFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -327,7 +325,7 @@ func TestSO5_PassWithFromFileFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckSO5()
+	check := newCheckTE2()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -335,7 +333,7 @@ func TestSO5_PassWithFromFileFlag(t *testing.T) {
 	}
 }
 
-func TestSO5_PassWithInputFlag(t *testing.T) {
+func TestTE2_PassWithInputFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -344,7 +342,7 @@ func TestSO5_PassWithInputFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckSO5()
+	check := newCheckTE2()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -352,14 +350,14 @@ func TestSO5_PassWithInputFlag(t *testing.T) {
 	}
 }
 
-func TestSO5_PassWithStdinInHelp(t *testing.T) {
+func TestTE2_PassWithStdinInHelp(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
 		RawHelp:  "Usage: mycli\n\nReads from stdin when no file is specified.",
 	}
 
-	check := newCheckSO5()
+	check := newCheckTE2()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -367,14 +365,14 @@ func TestSO5_PassWithStdinInHelp(t *testing.T) {
 	}
 }
 
-func TestSO5_PassWithPipeInHelp(t *testing.T) {
+func TestTE2_PassWithPipeInHelp(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
 		RawHelp:  "Usage: mycli\n\nYou can pipe input to this command.",
 	}
 
-	check := newCheckSO5()
+	check := newCheckTE2()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -382,7 +380,7 @@ func TestSO5_PassWithPipeInHelp(t *testing.T) {
 	}
 }
 
-func TestSO5_PassNoDataInputCommands(t *testing.T) {
+func TestTE2_PassNoDataInputCommands(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -392,7 +390,7 @@ func TestSO5_PassNoDataInputCommands(t *testing.T) {
 		},
 	}
 
-	check := newCheckSO5()
+	check := newCheckTE2()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -400,7 +398,7 @@ func TestSO5_PassNoDataInputCommands(t *testing.T) {
 	}
 }
 
-func TestSO5_FailMutatingWithoutStdin(t *testing.T) {
+func TestTE2_FailMutatingWithoutStdin(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -417,7 +415,7 @@ func TestSO5_FailMutatingWithoutStdin(t *testing.T) {
 		},
 	}
 
-	check := newCheckSO5()
+	check := newCheckTE2()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusFail {
@@ -425,7 +423,7 @@ func TestSO5_FailMutatingWithoutStdin(t *testing.T) {
 	}
 }
 
-func TestSO5_FailFileAcceptingWithoutStdin(t *testing.T) {
+func TestTE2_FailFileAcceptingWithoutStdin(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -435,7 +433,7 @@ func TestSO5_FailFileAcceptingWithoutStdin(t *testing.T) {
 		},
 	}
 
-	check := newCheckSO5()
+	check := newCheckTE2()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusFail {

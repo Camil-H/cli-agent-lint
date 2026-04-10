@@ -1,6 +1,6 @@
 # cli-agent-lint
 
-Audit CLI tools for AI agent-readiness. Runs 26 checks across 6 categories and produces a letter-grade scorecard telling you how well your CLI plays with autonomous agents.
+Audit CLI tools for AI agent-readiness. Runs 26 checks across 5 categories and produces a letter-grade scorecard telling you how well your CLI plays with autonomous agents.
 
 ## Demo
 
@@ -34,21 +34,20 @@ cli-agent-lint check --no-probe ./my-tool
 cli-agent-lint checks
 
 # Describe a specific check
-cli-agent-lint checks SO-1
+cli-agent-lint checks TE-1
 ```
 
 ## What it checks
 
-Every check targets a specific property that matters when an AI agent drives a CLI non-interactively.
+Every check targets a specific property that matters when an AI agent drives a CLI non-interactively. Checks are organized into five categories, each addressing a distinct failure mode agents hit in practice.
 
-| Category | ID | Checks | What it covers |
-|---|---|---|---|
-| Structured Output | `SO-*` | 5 | JSON output, stderr discipline, structured errors, version parsing, stdin support |
-| Terminal Hygiene | `TH-*` | 5 | ANSI detection, `--no-color`, `--quiet`, prompt suppression, confirmation bypass |
-| Input Validation | `IV-*` | 3 | Path traversal, control characters, dry-run support |
-| Schema & Discovery | `SD-*` | 4 | Shell completions, introspection, context files, usage examples |
-| Auth | `AU-*` | 2 | Env-var auth, non-interactive auth alternatives |
-| Operational Robustness | `OR-*` | 7 | Exit codes, timeouts, pagination, retry hints, determinism, field filtering |
+| Category | ID | Why it matters |
+|---|---|---|
+| **Flow Safety** | `FS-*` | An agent that gets stuck on an interactive prompt, can't authenticate, or can't tell success from failure is a dead agent. These checks verify your CLI won't block an autonomous loop &mdash; no TTY prompts, non-interactive auth paths, clean stderr/stdout separation, and reliable exit codes. |
+| **Token Efficiency** | `TE-*` | Every byte of CLI output eats into the agent's context window. Verbose output fills that window fast, degrading the agent's ability to follow instructions and reason about results. These checks ensure your CLI supports JSON output, `--quiet`/`--no-color` modes, pagination for list commands, and field filtering &mdash; so agents get signal, not noise. |
+| **Self-Describing** | `SD-*` | Agents learn your CLI by reading `--help`. If your help text lacks examples, your errors are cryptic, or there's no way to discover command schemas, the agent resorts to trial-and-error &mdash; wasting tokens and breaking flows. These checks verify your CLI teaches agents how to use it correctly on the first try. |
+| **Automation Safety** | `SA-*` | Agents retry failed commands, pass untrusted input, and can't read "Are you sure?" prompts. These checks verify your CLI has `--yes`/`--force` flags on destructive commands, rejects path traversal and control characters, and supports `--dry-run` so agents can preview before committing. |
+| **Predictability** | `PV-*` | An agent that can't trust its tool output will second-guess every step. These checks verify your CLI produces deterministic output, documents distinct exit codes for different error classes, supports `--timeout` for time-bounded execution, and surfaces retry/rate-limit information. |
 
 ### Check methods
 

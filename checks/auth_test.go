@@ -7,18 +7,16 @@ import (
 	"github.com/cli-agent-lint/cli-agent-lint/discovery"
 )
 
-// ---------------------------------------------------------------------------
-// AU-1: Env var auth support (passive check)
-// ---------------------------------------------------------------------------
+// FS-4: Env var auth support (passive check)
 
-func TestAU1_PassWithAuthEnvVar(t *testing.T) {
+func TestFS4_PassWithAuthEnvVar(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
 		RawHelp:  "Usage: mycli\n\nSet GITHUB_TOKEN to authenticate.",
 	}
 
-	check := newCheckAU1()
+	check := newCheckFS4()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -26,14 +24,14 @@ func TestAU1_PassWithAuthEnvVar(t *testing.T) {
 	}
 }
 
-func TestAU1_PassWithAPIKeyEnvVar(t *testing.T) {
+func TestFS4_PassWithAPIKeyEnvVar(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
 		RawHelp:  "Usage: mycli\n\nSet MY_SERVICE_API_KEY for access.",
 	}
 
-	check := newCheckAU1()
+	check := newCheckFS4()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -41,7 +39,7 @@ func TestAU1_PassWithAPIKeyEnvVar(t *testing.T) {
 	}
 }
 
-func TestAU1_PassWithTokenFlag(t *testing.T) {
+func TestFS4_PassWithTokenFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -50,7 +48,7 @@ func TestAU1_PassWithTokenFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckAU1()
+	check := newCheckFS4()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -58,7 +56,7 @@ func TestAU1_PassWithTokenFlag(t *testing.T) {
 	}
 }
 
-func TestAU1_PassWithAPIKeyFlag(t *testing.T) {
+func TestFS4_PassWithAPIKeyFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -67,7 +65,7 @@ func TestAU1_PassWithAPIKeyFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckAU1()
+	check := newCheckFS4()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -75,7 +73,7 @@ func TestAU1_PassWithAPIKeyFlag(t *testing.T) {
 	}
 }
 
-func TestAU1_PassWithAccessTokenFlag(t *testing.T) {
+func TestFS4_PassWithAccessTokenFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -84,7 +82,7 @@ func TestAU1_PassWithAccessTokenFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckAU1()
+	check := newCheckFS4()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -92,7 +90,7 @@ func TestAU1_PassWithAccessTokenFlag(t *testing.T) {
 	}
 }
 
-func TestAU1_PassWithCredentialsFlag(t *testing.T) {
+func TestFS4_PassWithCredentialsFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -101,7 +99,7 @@ func TestAU1_PassWithCredentialsFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckAU1()
+	check := newCheckFS4()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -109,7 +107,7 @@ func TestAU1_PassWithCredentialsFlag(t *testing.T) {
 	}
 }
 
-func TestAU1_PassWithAuthSubcommandMentioningToken(t *testing.T) {
+func TestFS4_PassWithAuthSubcommandMentioningToken(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -122,7 +120,7 @@ func TestAU1_PassWithAuthSubcommandMentioningToken(t *testing.T) {
 		},
 	}
 
-	check := newCheckAU1()
+	check := newCheckFS4()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -130,7 +128,7 @@ func TestAU1_PassWithAuthSubcommandMentioningToken(t *testing.T) {
 	}
 }
 
-func TestAU1_PassWithLoginSubcommandMentioningEnv(t *testing.T) {
+func TestFS4_PassWithLoginSubcommandMentioningEnv(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -143,7 +141,7 @@ func TestAU1_PassWithLoginSubcommandMentioningEnv(t *testing.T) {
 		},
 	}
 
-	check := newCheckAU1()
+	check := newCheckFS4()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -151,7 +149,7 @@ func TestAU1_PassWithLoginSubcommandMentioningEnv(t *testing.T) {
 	}
 }
 
-func TestAU1_FailAuthMentionedButNoEnvVar(t *testing.T) {
+func TestFS4_FailAuthMentionedButNoEnvVar(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -165,7 +163,7 @@ func TestAU1_FailAuthMentionedButNoEnvVar(t *testing.T) {
 		},
 	}
 
-	check := newCheckAU1()
+	check := newCheckFS4()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusFail {
@@ -173,7 +171,7 @@ func TestAU1_FailAuthMentionedButNoEnvVar(t *testing.T) {
 	}
 }
 
-func TestAU1_SkipNoAuthContent(t *testing.T) {
+func TestFS4_SkipNoAuthContent(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -183,7 +181,7 @@ func TestAU1_SkipNoAuthContent(t *testing.T) {
 		},
 	}
 
-	check := newCheckAU1()
+	check := newCheckFS4()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -191,8 +189,8 @@ func TestAU1_SkipNoAuthContent(t *testing.T) {
 	}
 }
 
-func TestAU1_SkipNilTree(t *testing.T) {
-	check := newCheckAU1()
+func TestFS4_SkipNilTree(t *testing.T) {
+	check := newCheckFS4()
 	result := check.Run(context.Background(), &Input{Tree: nil})
 
 	if result.Status != StatusSkip {
@@ -200,7 +198,7 @@ func TestAU1_SkipNilTree(t *testing.T) {
 	}
 }
 
-func TestAU1_PassWithEnvVarOnSubcommand(t *testing.T) {
+func TestFS4_PassWithEnvVarOnSubcommand(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -213,7 +211,7 @@ func TestAU1_PassWithEnvVarOnSubcommand(t *testing.T) {
 		},
 	}
 
-	check := newCheckAU1()
+	check := newCheckFS4()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -221,14 +219,14 @@ func TestAU1_PassWithEnvVarOnSubcommand(t *testing.T) {
 	}
 }
 
-func TestAU1_Metadata(t *testing.T) {
-	check := newCheckAU1()
+func TestFS4_Metadata(t *testing.T) {
+	check := newCheckFS4()
 
-	if check.ID() != "AU-1" {
-		t.Errorf("expected AU-1, got %s", check.ID())
+	if check.ID() != "FS-4" {
+		t.Errorf("expected FS-4, got %s", check.ID())
 	}
-	if check.Category() != CatAuth {
-		t.Errorf("expected auth, got %s", check.Category())
+	if check.Category() != CatFlowSafety {
+		t.Errorf("expected flow-safety, got %s", check.Category())
 	}
 	if check.Severity() != Warn {
 		t.Errorf("expected Warn, got %s", check.Severity())
@@ -238,11 +236,9 @@ func TestAU1_Metadata(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// AU-2: No mandatory interactive auth (passive check)
-// ---------------------------------------------------------------------------
+// FS-5: No mandatory interactive auth (passive check)
 
-func TestAU2_PassNoLoginCommand(t *testing.T) {
+func TestFS5_PassNoLoginCommand(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -252,7 +248,7 @@ func TestAU2_PassNoLoginCommand(t *testing.T) {
 		},
 	}
 
-	check := newCheckAU2()
+	check := newCheckFS5()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -260,7 +256,7 @@ func TestAU2_PassNoLoginCommand(t *testing.T) {
 	}
 }
 
-func TestAU2_PassLoginWithTokenFlag(t *testing.T) {
+func TestFS5_PassLoginWithTokenFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -275,7 +271,7 @@ func TestAU2_PassLoginWithTokenFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckAU2()
+	check := newCheckFS5()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -283,7 +279,7 @@ func TestAU2_PassLoginWithTokenFlag(t *testing.T) {
 	}
 }
 
-func TestAU2_PassLoginWithWithTokenFlag(t *testing.T) {
+func TestFS5_PassLoginWithWithTokenFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -298,7 +294,7 @@ func TestAU2_PassLoginWithWithTokenFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckAU2()
+	check := newCheckFS5()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -306,7 +302,7 @@ func TestAU2_PassLoginWithWithTokenFlag(t *testing.T) {
 	}
 }
 
-func TestAU2_PassSigninWithEnvVarMention(t *testing.T) {
+func TestFS5_PassSigninWithEnvVarMention(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -324,7 +320,7 @@ func TestAU2_PassSigninWithEnvVarMention(t *testing.T) {
 		},
 	}
 
-	check := newCheckAU2()
+	check := newCheckFS5()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -332,7 +328,7 @@ func TestAU2_PassSigninWithEnvVarMention(t *testing.T) {
 	}
 }
 
-func TestAU2_PassSignInWithServiceAccountFlag(t *testing.T) {
+func TestFS5_PassSignInWithServiceAccountFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -347,7 +343,7 @@ func TestAU2_PassSignInWithServiceAccountFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckAU2()
+	check := newCheckFS5()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -355,7 +351,7 @@ func TestAU2_PassSignInWithServiceAccountFlag(t *testing.T) {
 	}
 }
 
-func TestAU2_FailLoginNoAlternative(t *testing.T) {
+func TestFS5_FailLoginNoAlternative(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -377,7 +373,7 @@ func TestAU2_FailLoginNoAlternative(t *testing.T) {
 		},
 	}
 
-	check := newCheckAU2()
+	check := newCheckFS5()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusFail {
@@ -385,8 +381,8 @@ func TestAU2_FailLoginNoAlternative(t *testing.T) {
 	}
 }
 
-func TestAU2_SkipNilTree(t *testing.T) {
-	check := newCheckAU2()
+func TestFS5_SkipNilTree(t *testing.T) {
+	check := newCheckFS5()
 	result := check.Run(context.Background(), &Input{Tree: nil})
 
 	if result.Status != StatusSkip {
@@ -394,14 +390,14 @@ func TestAU2_SkipNilTree(t *testing.T) {
 	}
 }
 
-func TestAU2_Metadata(t *testing.T) {
-	check := newCheckAU2()
+func TestFS5_Metadata(t *testing.T) {
+	check := newCheckFS5()
 
-	if check.ID() != "AU-2" {
-		t.Errorf("expected AU-2, got %s", check.ID())
+	if check.ID() != "FS-5" {
+		t.Errorf("expected FS-5, got %s", check.ID())
 	}
-	if check.Category() != CatAuth {
-		t.Errorf("expected auth, got %s", check.Category())
+	if check.Category() != CatFlowSafety {
+		t.Errorf("expected flow-safety, got %s", check.Category())
 	}
 	if check.Severity() != Fail {
 		t.Errorf("expected Fail, got %s", check.Severity())
@@ -411,9 +407,7 @@ func TestAU2_Metadata(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
 // Helper function tests
-// ---------------------------------------------------------------------------
 
 func TestHasAuthEnvVarMention(t *testing.T) {
 	tests := []struct {
@@ -435,29 +429,6 @@ func TestHasAuthEnvVarMention(t *testing.T) {
 			got := hasAuthEnvVarMention(tt.text)
 			if got != tt.expected {
 				t.Errorf("hasAuthEnvVarMention(%q) = %v, want %v", tt.text, got, tt.expected)
-			}
-		})
-	}
-}
-
-func TestContainsAuthTerm(t *testing.T) {
-	tests := []struct {
-		name     string
-		text     string
-		expected bool
-	}{
-		{"auth", "You must authenticate", true},
-		{"login", "Please login first", true},
-		{"token", "Pass a token via flag", true},
-		{"credential", "Provide your credentials", true},
-		{"no match", "Process data files", false},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := containsAuthTerm(tt.text)
-			if got != tt.expected {
-				t.Errorf("containsAuthTerm(%q) = %v, want %v", tt.text, got, tt.expected)
 			}
 		})
 	}

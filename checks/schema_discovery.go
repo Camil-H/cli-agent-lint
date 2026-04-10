@@ -9,20 +9,18 @@ import (
 	"strings"
 )
 
-// ---------------------------------------------------------------------------
-// SD-1: Shell completions available
-// ---------------------------------------------------------------------------
+// SD-3: Shell completions available
 
-type checkSD1 struct {
+type checkSD3 struct {
 	BaseCheck
 }
 
-func newCheckSD1() *checkSD1 {
-	return &checkSD1{
+func newCheckSD3() *checkSD3 {
+	return &checkSD3{
 		BaseCheck: BaseCheck{
-			CheckID:             "SD-1",
+			CheckID:             "SD-3",
 			CheckName:           "Shell completions available",
-			CheckCategory:       CatSchemaDiscovery,
+			CheckCategory:       CatSelfDescribing,
 			CheckSeverity:       Info,
 			CheckMethod:         Passive,
 			CheckRecommendation: "Ship shell completions (bash/zsh/fish) via a `completion` subcommand.",
@@ -30,7 +28,7 @@ func newCheckSD1() *checkSD1 {
 	}
 }
 
-func (c *checkSD1) Run(ctx context.Context, input *Input) *Result {
+func (c *checkSD3) Run(ctx context.Context, input *Input) *Result {
 	idx := input.GetIndex()
 	if idx == nil {
 		return SkipResult(c, "no command tree available")
@@ -54,20 +52,18 @@ func (c *checkSD1) Run(ctx context.Context, input *Input) *Result {
 	return FailResult(c, "no completion subcommand or flag found")
 }
 
-// ---------------------------------------------------------------------------
-// SD-2: Schema / describe introspection
-// ---------------------------------------------------------------------------
+// SD-4: Schema / describe introspection
 
-type checkSD2 struct {
+type checkSD4 struct {
 	BaseCheck
 }
 
-func newCheckSD2() *checkSD2 {
-	return &checkSD2{
+func newCheckSD4() *checkSD4 {
+	return &checkSD4{
 		BaseCheck: BaseCheck{
-			CheckID:             "SD-2",
+			CheckID:             "SD-4",
 			CheckName:           "Schema / describe introspection",
-			CheckCategory:       CatSchemaDiscovery,
+			CheckCategory:       CatSelfDescribing,
 			CheckSeverity:       Warn,
 			CheckMethod:         Passive,
 			CheckRecommendation: "Expose command schemas at runtime so agents can discover parameters, types, and constraints.",
@@ -75,7 +71,7 @@ func newCheckSD2() *checkSD2 {
 	}
 }
 
-func (c *checkSD2) Run(ctx context.Context, input *Input) *Result {
+func (c *checkSD4) Run(ctx context.Context, input *Input) *Result {
 	idx := input.GetIndex()
 	if idx == nil {
 		return SkipResult(c, "no command tree available")
@@ -115,20 +111,18 @@ func (c *checkSD2) Run(ctx context.Context, input *Input) *Result {
 	return FailResult(c, "no schema/describe introspection subcommands or flags found")
 }
 
-// ---------------------------------------------------------------------------
-// SD-3: Skill / context files
-// ---------------------------------------------------------------------------
+// SD-5: Skill / context files
 
-type checkSD3 struct {
+type checkSD5 struct {
 	BaseCheck
 }
 
-func newCheckSD3() *checkSD3 {
-	return &checkSD3{
+func newCheckSD5() *checkSD5 {
+	return &checkSD5{
 		BaseCheck: BaseCheck{
-			CheckID:             "SD-3",
+			CheckID:             "SD-5",
 			CheckName:           "Skill / context files",
-			CheckCategory:       CatSchemaDiscovery,
+			CheckCategory:       CatSelfDescribing,
 			CheckSeverity:       Info,
 			CheckMethod:         Passive,
 			CheckRecommendation: "Ship skill/context files (AGENTS.md, CONTEXT.md) encoding invariants agents cannot intuit.",
@@ -136,7 +130,7 @@ func newCheckSD3() *checkSD3 {
 	}
 }
 
-func (c *checkSD3) Run(ctx context.Context, input *Input) *Result {
+func (c *checkSD5) Run(ctx context.Context, input *Input) *Result {
 	if input.Tree == nil {
 		return SkipResult(c, "no command tree available")
 	}
@@ -198,20 +192,18 @@ func (c *checkSD3) Run(ctx context.Context, input *Input) *Result {
 	return FailResult(c, "no skill/context files found near the binary")
 }
 
-// ---------------------------------------------------------------------------
-// SD-4: Help text with usage examples
-// ---------------------------------------------------------------------------
+// SD-6: Help text with usage examples
 
-type checkSD4 struct {
+type checkSD6 struct {
 	BaseCheck
 }
 
-func newCheckSD4() *checkSD4 {
-	return &checkSD4{
+func newCheckSD6() *checkSD6 {
+	return &checkSD6{
 		BaseCheck: BaseCheck{
-			CheckID:             "SD-4",
+			CheckID:             "SD-6",
 			CheckName:           "Help text with usage examples",
-			CheckCategory:       CatSchemaDiscovery,
+			CheckCategory:       CatSelfDescribing,
 			CheckSeverity:       Warn,
 			CheckMethod:         Passive,
 			CheckRecommendation: "Include an Examples section in --help output so agents can learn correct usage patterns.",
@@ -221,7 +213,7 @@ func newCheckSD4() *checkSD4 {
 
 var exampleSectionRe = regexp.MustCompile(`(?m)^(?:Examples?|EXAMPLES?|Usage [Ee]xamples?):\s*$`)
 
-func (c *checkSD4) Run(ctx context.Context, input *Input) *Result {
+func (c *checkSD6) Run(ctx context.Context, input *Input) *Result {
 	idx := input.GetIndex()
 	if idx == nil {
 		return SkipResult(c, "no command tree available")
@@ -236,13 +228,4 @@ func (c *checkSD4) Run(ctx context.Context, input *Input) *Result {
 	return FailResult(c, "no Examples section found in any command's help text")
 }
 
-// ---------------------------------------------------------------------------
-// Registration
-// ---------------------------------------------------------------------------
 
-func registerSchemaDiscoveryChecks(r *Registry) {
-	r.Register(newCheckSD1())
-	r.Register(newCheckSD2())
-	r.Register(newCheckSD3())
-	r.Register(newCheckSD4())
-}

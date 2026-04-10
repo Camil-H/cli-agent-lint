@@ -7,12 +7,10 @@ import (
 	"github.com/cli-agent-lint/cli-agent-lint/discovery"
 )
 
-// ---------------------------------------------------------------------------
-// OR-1: Exit codes (active check)
-// ---------------------------------------------------------------------------
+// FS-6: Exit codes (active check)
 
-func TestOR1_SkipNilProber(t *testing.T) {
-	check := newCheckOR1()
+func TestFS6_SkipNilProber(t *testing.T) {
+	check := newCheckFS6()
 	result := check.Run(context.Background(), &Input{Prober: nil})
 
 	if result.Status != StatusSkip {
@@ -23,18 +21,18 @@ func TestOR1_SkipNilProber(t *testing.T) {
 	}
 }
 
-func TestOR1_Metadata(t *testing.T) {
-	check := newCheckOR1()
+func TestFS6_Metadata(t *testing.T) {
+	check := newCheckFS6()
 
 	t.Run("ID", func(t *testing.T) {
-		if check.ID() != "OR-1" {
-			t.Errorf("expected OR-1, got %s", check.ID())
+		if check.ID() != "FS-6" {
+			t.Errorf("expected FS-6, got %s", check.ID())
 		}
 	})
 
 	t.Run("Category", func(t *testing.T) {
-		if check.Category() != CatOperational {
-			t.Errorf("expected operational, got %s", check.Category())
+		if check.Category() != CatFlowSafety {
+			t.Errorf("expected flow-safety, got %s", check.Category())
 		}
 	})
 
@@ -51,11 +49,9 @@ func TestOR1_Metadata(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
-// OR-2: Timeout flag (passive check)
-// ---------------------------------------------------------------------------
+// PV-1: Timeout flag (passive check)
 
-func TestOR2_PassWithTimeoutFlag(t *testing.T) {
+func TestPV1_PassWithTimeoutFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -64,7 +60,7 @@ func TestOR2_PassWithTimeoutFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR2()
+	check := newCheckPV1()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -72,7 +68,7 @@ func TestOR2_PassWithTimeoutFlag(t *testing.T) {
 	}
 }
 
-func TestOR2_PassWithRequestTimeoutFlag(t *testing.T) {
+func TestPV1_PassWithRequestTimeoutFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -81,7 +77,7 @@ func TestOR2_PassWithRequestTimeoutFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR2()
+	check := newCheckPV1()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -89,7 +85,7 @@ func TestOR2_PassWithRequestTimeoutFlag(t *testing.T) {
 	}
 }
 
-func TestOR2_PassWithTimeoutFlagOnSubcommand(t *testing.T) {
+func TestPV1_PassWithTimeoutFlagOnSubcommand(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -104,7 +100,7 @@ func TestOR2_PassWithTimeoutFlagOnSubcommand(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR2()
+	check := newCheckPV1()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -112,14 +108,14 @@ func TestOR2_PassWithTimeoutFlagOnSubcommand(t *testing.T) {
 	}
 }
 
-func TestOR2_PassWithTimeoutInHelp(t *testing.T) {
+func TestPV1_PassWithTimeoutInHelp(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
 		RawHelp:  "Usage: mycli [options]\n\n  --timeout duration  Set request timeout",
 	}
 
-	check := newCheckOR2()
+	check := newCheckPV1()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -127,7 +123,7 @@ func TestOR2_PassWithTimeoutInHelp(t *testing.T) {
 	}
 }
 
-func TestOR2_FailNoTimeoutFlag(t *testing.T) {
+func TestPV1_FailNoTimeoutFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -137,7 +133,7 @@ func TestOR2_FailNoTimeoutFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR2()
+	check := newCheckPV1()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusFail {
@@ -145,8 +141,8 @@ func TestOR2_FailNoTimeoutFlag(t *testing.T) {
 	}
 }
 
-func TestOR2_SkipNilTree(t *testing.T) {
-	check := newCheckOR2()
+func TestPV1_SkipNilTree(t *testing.T) {
+	check := newCheckPV1()
 	result := check.Run(context.Background(), &Input{Tree: nil})
 
 	if result.Status != StatusSkip {
@@ -154,8 +150,8 @@ func TestOR2_SkipNilTree(t *testing.T) {
 	}
 }
 
-func TestOR2_Metadata(t *testing.T) {
-	check := newCheckOR2()
+func TestPV1_Metadata(t *testing.T) {
+	check := newCheckPV1()
 
 	if check.Severity() != Info {
 		t.Errorf("expected Info, got %s", check.Severity())
@@ -165,11 +161,9 @@ func TestOR2_Metadata(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// OR-3: Pagination support (passive check)
-// ---------------------------------------------------------------------------
+// TE-5: Pagination support (passive check)
 
-func TestOR3_PassNoListCommands(t *testing.T) {
+func TestTE5_PassNoListCommands(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -179,7 +173,7 @@ func TestOR3_PassNoListCommands(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR3()
+	check := newCheckTE5()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -187,7 +181,7 @@ func TestOR3_PassNoListCommands(t *testing.T) {
 	}
 }
 
-func TestOR3_PassAllListCommandsHavePagination(t *testing.T) {
+func TestTE5_PassAllListCommandsHavePagination(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -212,7 +206,7 @@ func TestOR3_PassAllListCommandsHavePagination(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR3()
+	check := newCheckTE5()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -220,7 +214,7 @@ func TestOR3_PassAllListCommandsHavePagination(t *testing.T) {
 	}
 }
 
-func TestOR3_FailMissingPagination(t *testing.T) {
+func TestTE5_FailMissingPagination(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -244,7 +238,7 @@ func TestOR3_FailMissingPagination(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR3()
+	check := newCheckTE5()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusFail {
@@ -252,7 +246,7 @@ func TestOR3_FailMissingPagination(t *testing.T) {
 	}
 }
 
-func TestOR3_PassWithVariousPaginationFlags(t *testing.T) {
+func TestTE5_PassWithVariousPaginationFlags(t *testing.T) {
 	paginationFlags := []string{"page-size", "page", "per-page", "limit", "cursor", "offset", "page-all", "paginate", "all"}
 
 	for _, flagName := range paginationFlags {
@@ -272,7 +266,7 @@ func TestOR3_PassWithVariousPaginationFlags(t *testing.T) {
 				},
 			}
 
-			check := newCheckOR3()
+			check := newCheckTE5()
 			result := check.Run(context.Background(), makeInput(root))
 
 			if result.Status != StatusPass {
@@ -282,8 +276,8 @@ func TestOR3_PassWithVariousPaginationFlags(t *testing.T) {
 	}
 }
 
-func TestOR3_SkipNilTree(t *testing.T) {
-	check := newCheckOR3()
+func TestTE5_SkipNilTree(t *testing.T) {
+	check := newCheckTE5()
 	result := check.Run(context.Background(), &Input{Tree: nil})
 
 	if result.Status != StatusSkip {
@@ -291,11 +285,11 @@ func TestOR3_SkipNilTree(t *testing.T) {
 	}
 }
 
-func TestOR3_Metadata(t *testing.T) {
-	check := newCheckOR3()
+func TestTE5_Metadata(t *testing.T) {
+	check := newCheckTE5()
 
-	if check.ID() != "OR-3" {
-		t.Errorf("expected OR-3, got %s", check.ID())
+	if check.ID() != "TE-5" {
+		t.Errorf("expected TE-5, got %s", check.ID())
 	}
 	if check.Severity() != Warn {
 		t.Errorf("expected Warn, got %s", check.Severity())
@@ -305,11 +299,9 @@ func TestOR3_Metadata(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// OR-4: Retry / rate-limit hints (passive check)
-// ---------------------------------------------------------------------------
+// PV-2: Retry / rate-limit hints (passive check)
 
-func TestOR4_PassWithRetryFlag(t *testing.T) {
+func TestPV2_PassWithRetryFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -318,7 +310,7 @@ func TestOR4_PassWithRetryFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR4()
+	check := newCheckPV2()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -326,7 +318,7 @@ func TestOR4_PassWithRetryFlag(t *testing.T) {
 	}
 }
 
-func TestOR4_PassWithMaxRetriesFlag(t *testing.T) {
+func TestPV2_PassWithMaxRetriesFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -335,7 +327,7 @@ func TestOR4_PassWithMaxRetriesFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR4()
+	check := newCheckPV2()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -343,14 +335,14 @@ func TestOR4_PassWithMaxRetriesFlag(t *testing.T) {
 	}
 }
 
-func TestOR4_PassWithRetryInHelp(t *testing.T) {
+func TestPV2_PassWithRetryInHelp(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
 		RawHelp:  "Usage: mycli\n\nWill retry failed requests up to 3 times.",
 	}
 
-	check := newCheckOR4()
+	check := newCheckPV2()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -358,14 +350,14 @@ func TestOR4_PassWithRetryInHelp(t *testing.T) {
 	}
 }
 
-func TestOR4_PassWithRateLimitInHelp(t *testing.T) {
+func TestPV2_PassWithRateLimitInHelp(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
 		RawHelp:  "Usage: mycli\n\nRespects rate-limit headers from the server.",
 	}
 
-	check := newCheckOR4()
+	check := newCheckPV2()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -373,14 +365,14 @@ func TestOR4_PassWithRateLimitInHelp(t *testing.T) {
 	}
 }
 
-func TestOR4_PassWithThrottleInHelp(t *testing.T) {
+func TestPV2_PassWithThrottleInHelp(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
 		RawHelp:  "Usage: mycli\n\nThrottle requests to avoid API limits.",
 	}
 
-	check := newCheckOR4()
+	check := newCheckPV2()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -388,7 +380,7 @@ func TestOR4_PassWithThrottleInHelp(t *testing.T) {
 	}
 }
 
-func TestOR4_PassWithRetryFlagOnSubcommand(t *testing.T) {
+func TestPV2_PassWithRetryFlagOnSubcommand(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -403,7 +395,7 @@ func TestOR4_PassWithRetryFlagOnSubcommand(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR4()
+	check := newCheckPV2()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -411,7 +403,7 @@ func TestOR4_PassWithRetryFlagOnSubcommand(t *testing.T) {
 	}
 }
 
-func TestOR4_PassNoNetworkCommands(t *testing.T) {
+func TestPV2_PassNoNetworkCommands(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -421,7 +413,7 @@ func TestOR4_PassNoNetworkCommands(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR4()
+	check := newCheckPV2()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -429,7 +421,7 @@ func TestOR4_PassNoNetworkCommands(t *testing.T) {
 	}
 }
 
-func TestOR4_FailNetworkCLINoRetry(t *testing.T) {
+func TestPV2_FailNetworkCLINoRetry(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -439,7 +431,7 @@ func TestOR4_FailNetworkCLINoRetry(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR4()
+	check := newCheckPV2()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusFail {
@@ -447,8 +439,8 @@ func TestOR4_FailNetworkCLINoRetry(t *testing.T) {
 	}
 }
 
-func TestOR4_SkipNilTree(t *testing.T) {
-	check := newCheckOR4()
+func TestPV2_SkipNilTree(t *testing.T) {
+	check := newCheckPV2()
 	result := check.Run(context.Background(), &Input{Tree: nil})
 
 	if result.Status != StatusSkip {
@@ -456,11 +448,11 @@ func TestOR4_SkipNilTree(t *testing.T) {
 	}
 }
 
-func TestOR4_Metadata(t *testing.T) {
-	check := newCheckOR4()
+func TestPV2_Metadata(t *testing.T) {
+	check := newCheckPV2()
 
-	if check.ID() != "OR-4" {
-		t.Errorf("expected OR-4, got %s", check.ID())
+	if check.ID() != "PV-2" {
+		t.Errorf("expected PV-2, got %s", check.ID())
 	}
 	if check.Severity() != Info {
 		t.Errorf("expected Info, got %s", check.Severity())
@@ -470,12 +462,10 @@ func TestOR4_Metadata(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// OR-5: Deterministic output (active check)
-// ---------------------------------------------------------------------------
+// PV-3: Deterministic output (active check)
 
-func TestOR5_SkipNilProber(t *testing.T) {
-	check := newCheckOR5()
+func TestPV3_SkipNilProber(t *testing.T) {
+	check := newCheckPV3()
 	result := check.Run(context.Background(), &Input{Prober: nil})
 
 	if result.Status != StatusSkip {
@@ -483,11 +473,11 @@ func TestOR5_SkipNilProber(t *testing.T) {
 	}
 }
 
-func TestOR5_Metadata(t *testing.T) {
-	check := newCheckOR5()
+func TestPV3_Metadata(t *testing.T) {
+	check := newCheckPV3()
 
-	if check.ID() != "OR-5" {
-		t.Errorf("expected OR-5, got %s", check.ID())
+	if check.ID() != "PV-3" {
+		t.Errorf("expected PV-3, got %s", check.ID())
 	}
 	if check.Severity() != Info {
 		t.Errorf("expected Info, got %s", check.Severity())
@@ -495,16 +485,14 @@ func TestOR5_Metadata(t *testing.T) {
 	if check.Method() != Active {
 		t.Errorf("expected Active, got %s", check.Method())
 	}
-	if check.Category() != CatOperational {
-		t.Errorf("expected operational, got %s", check.Category())
+	if check.Category() != CatPredictability {
+		t.Errorf("expected predictability, got %s", check.Category())
 	}
 }
 
-// ---------------------------------------------------------------------------
-// OR-6: Field masks / response filtering (passive check)
-// ---------------------------------------------------------------------------
+// TE-6: Field masks / response filtering (passive check)
 
-func TestOR6_PassWithFieldsFlag(t *testing.T) {
+func TestTE6_PassWithFieldsFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -513,7 +501,7 @@ func TestOR6_PassWithFieldsFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR6()
+	check := newCheckTE6()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -521,7 +509,7 @@ func TestOR6_PassWithFieldsFlag(t *testing.T) {
 	}
 }
 
-func TestOR6_PassWithJqFlag(t *testing.T) {
+func TestTE6_PassWithJqFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -530,7 +518,7 @@ func TestOR6_PassWithJqFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR6()
+	check := newCheckTE6()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -538,7 +526,7 @@ func TestOR6_PassWithJqFlag(t *testing.T) {
 	}
 }
 
-func TestOR6_PassWithFilterFlag(t *testing.T) {
+func TestTE6_PassWithFilterFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -547,7 +535,7 @@ func TestOR6_PassWithFilterFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR6()
+	check := newCheckTE6()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -555,7 +543,7 @@ func TestOR6_PassWithFilterFlag(t *testing.T) {
 	}
 }
 
-func TestOR6_PassWithSelectFlag(t *testing.T) {
+func TestTE6_PassWithSelectFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -564,7 +552,7 @@ func TestOR6_PassWithSelectFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR6()
+	check := newCheckTE6()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -572,7 +560,7 @@ func TestOR6_PassWithSelectFlag(t *testing.T) {
 	}
 }
 
-func TestOR6_PassWithColumnsFlag(t *testing.T) {
+func TestTE6_PassWithColumnsFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -581,7 +569,7 @@ func TestOR6_PassWithColumnsFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR6()
+	check := newCheckTE6()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -589,7 +577,7 @@ func TestOR6_PassWithColumnsFlag(t *testing.T) {
 	}
 }
 
-func TestOR6_PassWithQueryFlag(t *testing.T) {
+func TestTE6_PassWithQueryFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -598,7 +586,7 @@ func TestOR6_PassWithQueryFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR6()
+	check := newCheckTE6()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -606,7 +594,7 @@ func TestOR6_PassWithQueryFlag(t *testing.T) {
 	}
 }
 
-func TestOR6_PassWithFieldFlag(t *testing.T) {
+func TestTE6_PassWithFieldFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -615,7 +603,7 @@ func TestOR6_PassWithFieldFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR6()
+	check := newCheckTE6()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -623,7 +611,7 @@ func TestOR6_PassWithFieldFlag(t *testing.T) {
 	}
 }
 
-func TestOR6_PassWithFilterFlagOnSubcommand(t *testing.T) {
+func TestTE6_PassWithFilterFlagOnSubcommand(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -638,7 +626,7 @@ func TestOR6_PassWithFilterFlagOnSubcommand(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR6()
+	check := newCheckTE6()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -646,14 +634,14 @@ func TestOR6_PassWithFilterFlagOnSubcommand(t *testing.T) {
 	}
 }
 
-func TestOR6_PassWithFilterInHelp(t *testing.T) {
+func TestTE6_PassWithFilterInHelp(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
 		RawHelp:  "Usage: mycli [options]\n\n  --fields  Comma-separated list of fields to include",
 	}
 
-	check := newCheckOR6()
+	check := newCheckTE6()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -661,7 +649,7 @@ func TestOR6_PassWithFilterInHelp(t *testing.T) {
 	}
 }
 
-func TestOR6_PassNoListCommands(t *testing.T) {
+func TestTE6_PassNoListCommands(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -671,7 +659,7 @@ func TestOR6_PassNoListCommands(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR6()
+	check := newCheckTE6()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -679,7 +667,7 @@ func TestOR6_PassNoListCommands(t *testing.T) {
 	}
 }
 
-func TestOR6_FailListCommandNoFilter(t *testing.T) {
+func TestTE6_FailListCommandNoFilter(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -694,7 +682,7 @@ func TestOR6_FailListCommandNoFilter(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR6()
+	check := newCheckTE6()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusFail {
@@ -702,8 +690,8 @@ func TestOR6_FailListCommandNoFilter(t *testing.T) {
 	}
 }
 
-func TestOR6_SkipNilTree(t *testing.T) {
-	check := newCheckOR6()
+func TestTE6_SkipNilTree(t *testing.T) {
+	check := newCheckTE6()
 	result := check.Run(context.Background(), &Input{Tree: nil})
 
 	if result.Status != StatusSkip {
@@ -711,11 +699,11 @@ func TestOR6_SkipNilTree(t *testing.T) {
 	}
 }
 
-func TestOR6_Metadata(t *testing.T) {
-	check := newCheckOR6()
+func TestTE6_Metadata(t *testing.T) {
+	check := newCheckTE6()
 
-	if check.ID() != "OR-6" {
-		t.Errorf("expected OR-6, got %s", check.ID())
+	if check.ID() != "TE-6" {
+		t.Errorf("expected TE-6, got %s", check.ID())
 	}
 	if check.Severity() != Info {
 		t.Errorf("expected Info, got %s", check.Severity())
@@ -723,23 +711,21 @@ func TestOR6_Metadata(t *testing.T) {
 	if check.Method() != Passive {
 		t.Errorf("expected Passive, got %s", check.Method())
 	}
-	if check.Category() != CatOperational {
-		t.Errorf("expected operational, got %s", check.Category())
+	if check.Category() != CatTokenEfficiency {
+		t.Errorf("expected token-efficiency, got %s", check.Category())
 	}
 }
 
-// ---------------------------------------------------------------------------
-// OR-7: Distinct exit codes for error classes (passive check)
-// ---------------------------------------------------------------------------
+// PV-4: Distinct exit codes for error classes (passive check)
 
-func TestOR7_Metadata(t *testing.T) {
-	check := newCheckOR7()
+func TestPV4_Metadata(t *testing.T) {
+	check := newCheckPV4()
 
-	if check.ID() != "OR-7" {
-		t.Errorf("expected OR-7, got %s", check.ID())
+	if check.ID() != "PV-4" {
+		t.Errorf("expected PV-4, got %s", check.ID())
 	}
-	if check.Category() != CatOperational {
-		t.Errorf("expected operational, got %s", check.Category())
+	if check.Category() != CatPredictability {
+		t.Errorf("expected predictability, got %s", check.Category())
 	}
 	if check.Severity() != Info {
 		t.Errorf("expected Info, got %s", check.Severity())
@@ -749,8 +735,8 @@ func TestOR7_Metadata(t *testing.T) {
 	}
 }
 
-func TestOR7_SkipNilTree(t *testing.T) {
-	check := newCheckOR7()
+func TestPV4_SkipNilTree(t *testing.T) {
+	check := newCheckPV4()
 	result := check.Run(context.Background(), &Input{Tree: nil})
 
 	if result.Status != StatusSkip {
@@ -758,14 +744,14 @@ func TestOR7_SkipNilTree(t *testing.T) {
 	}
 }
 
-func TestOR7_PassWithExitCodesSection(t *testing.T) {
+func TestPV4_PassWithExitCodesSection(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
 		RawHelp:  "Usage: mycli\n\nEXIT CODES\n  0  Success\n  1  General error\n  2  Usage error\n",
 	}
 
-	check := newCheckOR7()
+	check := newCheckPV4()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -773,14 +759,14 @@ func TestOR7_PassWithExitCodesSection(t *testing.T) {
 	}
 }
 
-func TestOR7_PassWithExitStatusSection(t *testing.T) {
+func TestPV4_PassWithExitStatusSection(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
 		RawHelp:  "Usage: mycli\n\nEXIT STATUS\n  0  OK\n  1  Error\n",
 	}
 
-	check := newCheckOR7()
+	check := newCheckPV4()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -788,14 +774,14 @@ func TestOR7_PassWithExitStatusSection(t *testing.T) {
 	}
 }
 
-func TestOR7_PassWithExitCodeMentionInHelp(t *testing.T) {
+func TestPV4_PassWithExitCodeMentionInHelp(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
 		RawHelp:  "Usage: mycli\n\nReturns exit code 1 on failure.",
 	}
 
-	check := newCheckOR7()
+	check := newCheckPV4()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -803,14 +789,14 @@ func TestOR7_PassWithExitCodeMentionInHelp(t *testing.T) {
 	}
 }
 
-func TestOR7_PassWithReturnCodeMention(t *testing.T) {
+func TestPV4_PassWithReturnCodeMention(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
 		RawHelp:  "Usage: mycli\n\nThe return code indicates the result.",
 	}
 
-	check := newCheckOR7()
+	check := newCheckPV4()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -818,7 +804,7 @@ func TestOR7_PassWithReturnCodeMention(t *testing.T) {
 	}
 }
 
-func TestOR7_FailNoDocumentation(t *testing.T) {
+func TestPV4_FailNoDocumentation(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -828,7 +814,7 @@ func TestOR7_FailNoDocumentation(t *testing.T) {
 		},
 	}
 
-	check := newCheckOR7()
+	check := newCheckPV4()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusFail {

@@ -7,16 +7,14 @@ import (
 	"github.com/cli-agent-lint/cli-agent-lint/discovery"
 )
 
-// ---------------------------------------------------------------------------
-// TH-1: Non-TTY detection (active check)
-// ---------------------------------------------------------------------------
+// FS-2: Non-TTY detection (active check)
 
-func TestTH1_SkipNilProber(t *testing.T) {
-	check := &checkTH1{
+func TestFS2_SkipNilProber(t *testing.T) {
+	check := &checkFS2{
 		BaseCheck: BaseCheck{
-			CheckID:     "TH-1",
+			CheckID:     "FS-2",
 			CheckName:   "Non-TTY detection (no ANSI in pipes)",
-			CheckCategory: CatTerminalHygiene,
+			CheckCategory: CatFlowSafety,
 			CheckSeverity: Fail,
 			CheckMethod:   Active,
 		},
@@ -31,22 +29,22 @@ func TestTH1_SkipNilProber(t *testing.T) {
 	}
 }
 
-func TestTH1_Metadata(t *testing.T) {
+func TestFS2_Metadata(t *testing.T) {
 	r := DefaultRegistry()
-	check := r.Get("TH-1")
+	check := r.Get("FS-2")
 	if check == nil {
-		t.Fatal("TH-1 not found in registry")
+		t.Fatal("FS-2 not found in registry")
 	}
 
 	t.Run("ID", func(t *testing.T) {
-		if check.ID() != "TH-1" {
-			t.Errorf("expected TH-1, got %s", check.ID())
+		if check.ID() != "FS-2" {
+			t.Errorf("expected FS-2, got %s", check.ID())
 		}
 	})
 
 	t.Run("Category", func(t *testing.T) {
-		if check.Category() != CatTerminalHygiene {
-			t.Errorf("expected terminal-hygiene, got %s", check.Category())
+		if check.Category() != CatFlowSafety {
+			t.Errorf("expected flow-safety, got %s", check.Category())
 		}
 	})
 
@@ -63,11 +61,9 @@ func TestTH1_Metadata(t *testing.T) {
 	})
 }
 
-// ---------------------------------------------------------------------------
-// TH-2: --no-color flag (passive check)
-// ---------------------------------------------------------------------------
+// TE-3: --no-color flag (passive check)
 
-func TestTH2_PassWithNoColorFlag(t *testing.T) {
+func TestTE3_PassWithNoColorFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -77,7 +73,7 @@ func TestTH2_PassWithNoColorFlag(t *testing.T) {
 	}
 
 	r := DefaultRegistry()
-	check := r.Get("TH-2")
+	check := r.Get("TE-3")
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -85,7 +81,7 @@ func TestTH2_PassWithNoColorFlag(t *testing.T) {
 	}
 }
 
-func TestTH2_PassWithColorFlag(t *testing.T) {
+func TestTE3_PassWithColorFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -95,7 +91,7 @@ func TestTH2_PassWithColorFlag(t *testing.T) {
 	}
 
 	r := DefaultRegistry()
-	check := r.Get("TH-2")
+	check := r.Get("TE-3")
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -103,7 +99,7 @@ func TestTH2_PassWithColorFlag(t *testing.T) {
 	}
 }
 
-func TestTH2_PassWithNoColorInHelp(t *testing.T) {
+func TestTE3_PassWithNoColorInHelp(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -111,7 +107,7 @@ func TestTH2_PassWithNoColorInHelp(t *testing.T) {
 	}
 
 	r := DefaultRegistry()
-	check := r.Get("TH-2")
+	check := r.Get("TE-3")
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -119,7 +115,7 @@ func TestTH2_PassWithNoColorInHelp(t *testing.T) {
 	}
 }
 
-func TestTH2_PassWithColorNeverInHelp(t *testing.T) {
+func TestTE3_PassWithColorNeverInHelp(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -127,7 +123,7 @@ func TestTH2_PassWithColorNeverInHelp(t *testing.T) {
 	}
 
 	r := DefaultRegistry()
-	check := r.Get("TH-2")
+	check := r.Get("TE-3")
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -135,7 +131,7 @@ func TestTH2_PassWithColorNeverInHelp(t *testing.T) {
 	}
 }
 
-func TestTH2_FailNoColorSupport(t *testing.T) {
+func TestTE3_FailNoColorSupport(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -146,7 +142,7 @@ func TestTH2_FailNoColorSupport(t *testing.T) {
 	}
 
 	r := DefaultRegistry()
-	check := r.Get("TH-2")
+	check := r.Get("TE-3")
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusFail {
@@ -154,9 +150,9 @@ func TestTH2_FailNoColorSupport(t *testing.T) {
 	}
 }
 
-func TestTH2_Metadata(t *testing.T) {
+func TestTE3_Metadata(t *testing.T) {
 	r := DefaultRegistry()
-	check := r.Get("TH-2")
+	check := r.Get("TE-3")
 
 	if check.Method() != Passive {
 		t.Errorf("expected Passive, got %s", check.Method())
@@ -166,11 +162,9 @@ func TestTH2_Metadata(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TH-3: --quiet / --silent flag (passive check)
-// ---------------------------------------------------------------------------
+// TE-4: --quiet / --silent flag (passive check)
 
-func TestTH3_PassWithQuietFlag(t *testing.T) {
+func TestTE4_PassWithQuietFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -180,7 +174,7 @@ func TestTH3_PassWithQuietFlag(t *testing.T) {
 	}
 
 	r := DefaultRegistry()
-	check := r.Get("TH-3")
+	check := r.Get("TE-4")
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -188,7 +182,7 @@ func TestTH3_PassWithQuietFlag(t *testing.T) {
 	}
 }
 
-func TestTH3_PassWithSilentFlag(t *testing.T) {
+func TestTE4_PassWithSilentFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -198,7 +192,7 @@ func TestTH3_PassWithSilentFlag(t *testing.T) {
 	}
 
 	r := DefaultRegistry()
-	check := r.Get("TH-3")
+	check := r.Get("TE-4")
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -206,7 +200,7 @@ func TestTH3_PassWithSilentFlag(t *testing.T) {
 	}
 }
 
-func TestTH3_PassWithShortQFlag(t *testing.T) {
+func TestTE4_PassWithShortQFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -216,7 +210,7 @@ func TestTH3_PassWithShortQFlag(t *testing.T) {
 	}
 
 	r := DefaultRegistry()
-	check := r.Get("TH-3")
+	check := r.Get("TE-4")
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -224,7 +218,7 @@ func TestTH3_PassWithShortQFlag(t *testing.T) {
 	}
 }
 
-func TestTH3_PassWithQuietInHelp(t *testing.T) {
+func TestTE4_PassWithQuietInHelp(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -232,7 +226,7 @@ func TestTH3_PassWithQuietInHelp(t *testing.T) {
 	}
 
 	r := DefaultRegistry()
-	check := r.Get("TH-3")
+	check := r.Get("TE-4")
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -240,7 +234,7 @@ func TestTH3_PassWithQuietInHelp(t *testing.T) {
 	}
 }
 
-func TestTH3_FailNoQuietSupport(t *testing.T) {
+func TestTE4_FailNoQuietSupport(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -251,7 +245,7 @@ func TestTH3_FailNoQuietSupport(t *testing.T) {
 	}
 
 	r := DefaultRegistry()
-	check := r.Get("TH-3")
+	check := r.Get("TE-4")
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusFail {
@@ -259,9 +253,9 @@ func TestTH3_FailNoQuietSupport(t *testing.T) {
 	}
 }
 
-func TestTH3_Metadata(t *testing.T) {
+func TestTE4_Metadata(t *testing.T) {
 	r := DefaultRegistry()
-	check := r.Get("TH-3")
+	check := r.Get("TE-4")
 
 	if check.Method() != Passive {
 		t.Errorf("expected Passive, got %s", check.Method())
@@ -271,18 +265,16 @@ func TestTH3_Metadata(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TH-5: Confirmation bypass for destructive commands (passive check)
-// ---------------------------------------------------------------------------
+// SA-1: Confirmation bypass for destructive commands (passive check)
 
-func TestTH5_Metadata(t *testing.T) {
-	check := newCheckTH5()
+func TestSA1_Metadata(t *testing.T) {
+	check := newCheckSA1()
 
-	if check.ID() != "TH-5" {
-		t.Errorf("expected TH-5, got %s", check.ID())
+	if check.ID() != "SA-1" {
+		t.Errorf("expected SA-1, got %s", check.ID())
 	}
-	if check.Category() != CatTerminalHygiene {
-		t.Errorf("expected terminal-hygiene, got %s", check.Category())
+	if check.Category() != CatAutomationSafety {
+		t.Errorf("expected automation-safety, got %s", check.Category())
 	}
 	if check.Severity() != Warn {
 		t.Errorf("expected Warn, got %s", check.Severity())
@@ -292,8 +284,8 @@ func TestTH5_Metadata(t *testing.T) {
 	}
 }
 
-func TestTH5_SkipNilTree(t *testing.T) {
-	check := newCheckTH5()
+func TestSA1_SkipNilTree(t *testing.T) {
+	check := newCheckSA1()
 	result := check.Run(context.Background(), &Input{Tree: nil})
 
 	if result.Status != StatusSkip {
@@ -301,7 +293,7 @@ func TestTH5_SkipNilTree(t *testing.T) {
 	}
 }
 
-func TestTH5_PassNoMutatingCommands(t *testing.T) {
+func TestSA1_PassNoMutatingCommands(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -311,7 +303,7 @@ func TestTH5_PassNoMutatingCommands(t *testing.T) {
 		},
 	}
 
-	check := newCheckTH5()
+	check := newCheckSA1()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -319,7 +311,7 @@ func TestTH5_PassNoMutatingCommands(t *testing.T) {
 	}
 }
 
-func TestTH5_PassAllHaveYesFlag(t *testing.T) {
+func TestSA1_PassAllHaveYesFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -343,7 +335,7 @@ func TestTH5_PassAllHaveYesFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckTH5()
+	check := newCheckSA1()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -351,7 +343,7 @@ func TestTH5_PassAllHaveYesFlag(t *testing.T) {
 	}
 }
 
-func TestTH5_PassWithForceFlag(t *testing.T) {
+func TestSA1_PassWithForceFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -367,7 +359,7 @@ func TestTH5_PassWithForceFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckTH5()
+	check := newCheckSA1()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -375,7 +367,7 @@ func TestTH5_PassWithForceFlag(t *testing.T) {
 	}
 }
 
-func TestTH5_PassWithNonInteractiveFlag(t *testing.T) {
+func TestSA1_PassWithNonInteractiveFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -391,7 +383,7 @@ func TestTH5_PassWithNonInteractiveFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckTH5()
+	check := newCheckSA1()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -399,7 +391,7 @@ func TestTH5_PassWithNonInteractiveFlag(t *testing.T) {
 	}
 }
 
-func TestTH5_FailMissingBypassFlag(t *testing.T) {
+func TestSA1_FailMissingBypassFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -423,7 +415,7 @@ func TestTH5_FailMissingBypassFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckTH5()
+	check := newCheckSA1()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusFail {
@@ -431,7 +423,7 @@ func TestTH5_FailMissingBypassFlag(t *testing.T) {
 	}
 }
 
-func TestTH5_PassWithShortYFlag(t *testing.T) {
+func TestSA1_PassWithShortYFlag(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -447,7 +439,7 @@ func TestTH5_PassWithShortYFlag(t *testing.T) {
 		},
 	}
 
-	check := newCheckTH5()
+	check := newCheckSA1()
 	result := check.Run(context.Background(), makeInput(root))
 
 	if result.Status != StatusPass {
@@ -455,13 +447,11 @@ func TestTH5_PassWithShortYFlag(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// TH-4: No interactive prompts in non-TTY (active check)
-// ---------------------------------------------------------------------------
+// FS-3: No interactive prompts in non-TTY (active check)
 
-func TestTH4_SkipNilProber(t *testing.T) {
+func TestFS3_SkipNilProber(t *testing.T) {
 	r := DefaultRegistry()
-	check := r.Get("TH-4")
+	check := r.Get("FS-3")
 	result := check.Run(context.Background(), &Input{Prober: nil, Tree: makeTree(&discovery.Command{
 		Name:     "mycli",
 		FullPath: []string{"mycli"},
@@ -472,9 +462,9 @@ func TestTH4_SkipNilProber(t *testing.T) {
 	}
 }
 
-func TestTH4_Metadata(t *testing.T) {
+func TestFS3_Metadata(t *testing.T) {
 	r := DefaultRegistry()
-	check := r.Get("TH-4")
+	check := r.Get("FS-3")
 
 	if check.Method() != Active {
 		t.Errorf("expected Active, got %s", check.Method())
@@ -482,7 +472,7 @@ func TestTH4_Metadata(t *testing.T) {
 	if check.Severity() != Fail {
 		t.Errorf("expected Fail, got %s", check.Severity())
 	}
-	if check.Category() != CatTerminalHygiene {
-		t.Errorf("expected terminal-hygiene, got %s", check.Category())
+	if check.Category() != CatFlowSafety {
+		t.Errorf("expected flow-safety, got %s", check.Category())
 	}
 }

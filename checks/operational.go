@@ -11,20 +11,18 @@ import (
 	"github.com/cli-agent-lint/cli-agent-lint/probe"
 )
 
-// ---------------------------------------------------------------------------
-// OR-1: Exit codes
-// ---------------------------------------------------------------------------
+// FS-6: Exit codes
 
-type checkOR1 struct {
+type checkFS6 struct {
 	BaseCheck
 }
 
-func newCheckOR1() *checkOR1 {
-	return &checkOR1{
+func newCheckFS6() *checkFS6 {
+	return &checkFS6{
 		BaseCheck: BaseCheck{
-			CheckID:             "OR-1",
+			CheckID:             "FS-6",
 			CheckName:           "Exit codes",
-			CheckCategory:       CatOperational,
+			CheckCategory:       CatFlowSafety,
 			CheckSeverity:       Fail,
 			CheckMethod:         Active,
 			CheckRecommendation: "Use distinct non-zero exit codes for different failure modes (bad input, auth failure, server error).",
@@ -32,7 +30,7 @@ func newCheckOR1() *checkOR1 {
 	}
 }
 
-func (c *checkOR1) Run(ctx context.Context, input *Input) *Result {
+func (c *checkFS6) Run(ctx context.Context, input *Input) *Result {
 	if r := skipIfNoProber(c, input); r != nil {
 		return r
 	}
@@ -58,20 +56,18 @@ func (c *checkOR1) Run(ctx context.Context, input *Input) *Result {
 	return PassResult(c, fmt.Sprintf("--help exits 0, bad subcommand exits %d", badResult.ExitCode))
 }
 
-// ---------------------------------------------------------------------------
-// OR-2: Timeout flag
-// ---------------------------------------------------------------------------
+// PV-1: Timeout flag
 
-type checkOR2 struct {
+type checkPV1 struct {
 	BaseCheck
 }
 
-func newCheckOR2() *checkOR2 {
-	return &checkOR2{
+func newCheckPV1() *checkPV1 {
+	return &checkPV1{
 		BaseCheck: BaseCheck{
-			CheckID:             "OR-2",
+			CheckID:             "PV-1",
 			CheckName:           "Timeout flag",
-			CheckCategory:       CatOperational,
+			CheckCategory:       CatPredictability,
 			CheckSeverity:       Info,
 			CheckMethod:         Passive,
 			CheckRecommendation: "Add `--timeout` flag so agents can enforce time budgets.",
@@ -79,7 +75,7 @@ func newCheckOR2() *checkOR2 {
 	}
 }
 
-func (c *checkOR2) Run(ctx context.Context, input *Input) *Result {
+func (c *checkPV1) Run(ctx context.Context, input *Input) *Result {
 	idx := input.GetIndex()
 	if idx == nil {
 		return SkipResult(c, "no command tree available")
@@ -96,20 +92,18 @@ func (c *checkOR2) Run(ctx context.Context, input *Input) *Result {
 	return FailResult(c, "no --timeout or --request-timeout flag found")
 }
 
-// ---------------------------------------------------------------------------
-// OR-3: Pagination support
-// ---------------------------------------------------------------------------
+// TE-5: Pagination support
 
-type checkOR3 struct {
+type checkTE5 struct {
 	BaseCheck
 }
 
-func newCheckOR3() *checkOR3 {
-	return &checkOR3{
+func newCheckTE5() *checkTE5 {
+	return &checkTE5{
 		BaseCheck: BaseCheck{
-			CheckID:             "OR-3",
+			CheckID:             "TE-5",
 			CheckName:           "Pagination support",
-			CheckCategory:       CatOperational,
+			CheckCategory:       CatTokenEfficiency,
 			CheckSeverity:       Warn,
 			CheckMethod:         Passive,
 			CheckRecommendation: "Support `--page-all` or NDJSON streaming for list commands to avoid silent truncation.",
@@ -117,7 +111,7 @@ func newCheckOR3() *checkOR3 {
 	}
 }
 
-func (c *checkOR3) Run(ctx context.Context, input *Input) *Result {
+func (c *checkTE5) Run(ctx context.Context, input *Input) *Result {
 	idx := input.GetIndex()
 	if idx == nil {
 		return SkipResult(c, "no command tree available")
@@ -145,20 +139,18 @@ func (c *checkOR3) Run(ctx context.Context, input *Input) *Result {
 	return FailResult(c, fmt.Sprintf("list-like commands missing pagination flags: %s", strings.Join(missing, ", ")))
 }
 
-// ---------------------------------------------------------------------------
-// OR-4: Retry / rate-limit hints
-// ---------------------------------------------------------------------------
+// PV-2: Retry / rate-limit hints
 
-type checkOR4 struct {
+type checkPV2 struct {
 	BaseCheck
 }
 
-func newCheckOR4() *checkOR4 {
-	return &checkOR4{
+func newCheckPV2() *checkPV2 {
+	return &checkPV2{
 		BaseCheck: BaseCheck{
-			CheckID:             "OR-4",
+			CheckID:             "PV-2",
 			CheckName:           "Retry / rate-limit hints",
-			CheckCategory:       CatOperational,
+			CheckCategory:       CatPredictability,
 			CheckSeverity:       Info,
 			CheckMethod:         Passive,
 			CheckRecommendation: "Surface rate-limit and retry-after information in structured error output.",
@@ -174,7 +166,7 @@ func hasNetworkIndicators(idx *discovery.CommandIndex) bool {
 	return found
 }
 
-func (c *checkOR4) Run(ctx context.Context, input *Input) *Result {
+func (c *checkPV2) Run(ctx context.Context, input *Input) *Result {
 	idx := input.GetIndex()
 	if idx == nil {
 		return SkipResult(c, "no command tree available")
@@ -195,20 +187,18 @@ func (c *checkOR4) Run(ctx context.Context, input *Input) *Result {
 	return FailResult(c, "no retry or rate-limit flags or help text found")
 }
 
-// ---------------------------------------------------------------------------
-// OR-5: Deterministic output
-// ---------------------------------------------------------------------------
+// PV-3: Deterministic output
 
-type checkOR5 struct {
+type checkPV3 struct {
 	BaseCheck
 }
 
-func newCheckOR5() *checkOR5 {
-	return &checkOR5{
+func newCheckPV3() *checkPV3 {
+	return &checkPV3{
 		BaseCheck: BaseCheck{
-			CheckID:             "OR-5",
+			CheckID:             "PV-3",
 			CheckName:           "Deterministic output",
-			CheckCategory:       CatOperational,
+			CheckCategory:       CatPredictability,
 			CheckSeverity:       Info,
 			CheckMethod:         Active,
 			CheckRecommendation: "Ensure identical inputs produce identical outputs. Avoid injecting timestamps or random values unless requested.",
@@ -216,7 +206,7 @@ func newCheckOR5() *checkOR5 {
 	}
 }
 
-func (c *checkOR5) Run(ctx context.Context, input *Input) *Result {
+func (c *checkPV3) Run(ctx context.Context, input *Input) *Result {
 	if r := skipIfNoProber(c, input); r != nil {
 		return r
 	}
@@ -238,20 +228,18 @@ func (c *checkOR5) Run(ctx context.Context, input *Input) *Result {
 	return PassResult(c, "--help output is deterministic across two runs")
 }
 
-// ---------------------------------------------------------------------------
-// OR-6: Field masks / response filtering
-// ---------------------------------------------------------------------------
+// TE-6: Field masks / response filtering
 
-type checkOR6 struct {
+type checkTE6 struct {
 	BaseCheck
 }
 
-func newCheckOR6() *checkOR6 {
-	return &checkOR6{
+func newCheckTE6() *checkTE6 {
+	return &checkTE6{
 		BaseCheck: BaseCheck{
-			CheckID:             "OR-6",
+			CheckID:             "TE-6",
 			CheckName:           "Field masks / response filtering",
-			CheckCategory:       CatOperational,
+			CheckCategory:       CatTokenEfficiency,
 			CheckSeverity:       Info,
 			CheckMethod:         Passive,
 			CheckRecommendation: "Support field masks or response filtering to limit output size and protect agent context windows.",
@@ -259,7 +247,7 @@ func newCheckOR6() *checkOR6 {
 	}
 }
 
-func (c *checkOR6) Run(ctx context.Context, input *Input) *Result {
+func (c *checkTE6) Run(ctx context.Context, input *Input) *Result {
 	idx := input.GetIndex()
 	if idx == nil {
 		return SkipResult(c, "no command tree available")
@@ -284,20 +272,18 @@ func (c *checkOR6) Run(ctx context.Context, input *Input) *Result {
 	return FailResult(c, "no field-mask or response-filtering flags found")
 }
 
-// ---------------------------------------------------------------------------
-// OR-7: Distinct exit codes for error classes
-// ---------------------------------------------------------------------------
+// PV-4: Distinct exit codes for error classes
 
-type checkOR7 struct {
+type checkPV4 struct {
 	BaseCheck
 }
 
-func newCheckOR7() *checkOR7 {
-	return &checkOR7{
+func newCheckPV4() *checkPV4 {
+	return &checkPV4{
 		BaseCheck: BaseCheck{
-			CheckID:             "OR-7",
+			CheckID:             "PV-4",
 			CheckName:           "Distinct exit codes for error classes",
-			CheckCategory:       CatOperational,
+			CheckCategory:       CatPredictability,
 			CheckSeverity:       Info,
 			CheckMethod:         Passive,
 			CheckRecommendation: "Document and use distinct exit codes (e.g., 1=error, 2=usage, 4=auth) so agents can classify failures without parsing stderr.",
@@ -307,7 +293,7 @@ func newCheckOR7() *checkOR7 {
 
 var exitCodeSectionRe = regexp.MustCompile(`(?m)^(?:EXIT STATUS|EXIT CODES|Exit [Cc]odes?)`)
 
-func (c *checkOR7) Run(ctx context.Context, input *Input) *Result {
+func (c *checkPV4) Run(ctx context.Context, input *Input) *Result {
 	idx := input.GetIndex()
 	if idx == nil {
 		return SkipResult(c, "no command tree available")
@@ -326,16 +312,4 @@ func (c *checkOR7) Run(ctx context.Context, input *Input) *Result {
 	return FailResult(c, "no exit code documentation found in help text")
 }
 
-// ---------------------------------------------------------------------------
-// Registration
-// ---------------------------------------------------------------------------
 
-func registerOperationalChecks(r *Registry) {
-	r.Register(newCheckOR1())
-	r.Register(newCheckOR2())
-	r.Register(newCheckOR3())
-	r.Register(newCheckOR4())
-	r.Register(newCheckOR5())
-	r.Register(newCheckOR6())
-	r.Register(newCheckOR7())
-}

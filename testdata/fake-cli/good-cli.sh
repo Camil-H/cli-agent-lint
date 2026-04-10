@@ -184,7 +184,7 @@ HELP
     ;;
 
   checks)
-    echo "SO-1  JSON output support"
+    echo "TE-1  JSON output support"
     exit 0
     ;;
 

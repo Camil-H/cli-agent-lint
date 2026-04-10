@@ -109,15 +109,12 @@ func DefaultRegistry() *Registry {
 	return r
 }
 
-// registerBuiltinChecks registers all check implementations.
-// Each category file provides its own registration function.
 func registerBuiltinChecks(r *Registry) {
-	registerStructuredOutputChecks(r)
-	registerTerminalHygieneChecks(r)
-	registerInputValidationChecks(r)
-	registerSchemaDiscoveryChecks(r)
-	registerAuthChecks(r)
-	registerOperationalChecks(r)
+	registerFlowSafetyChecks(r)
+	registerTokenEfficiencyChecks(r)
+	registerSelfDescribingChecks(r)
+	registerAutomationSafetyChecks(r)
+	registerPredictabilityChecks(r)
 }
 
 // SortResultsByCategory sorts results by category order, then by check ID.

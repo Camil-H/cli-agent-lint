@@ -12,35 +12,35 @@ import (
 func buildTextReport() *Report {
 	results := []*checks.Result{
 		{
-			CheckID:        "SO-1",
+			CheckID:        "TE-1",
 			CheckName:      "JSON stdout",
-			Category:       checks.CatStructuredOutput,
+			Category:       checks.CatTokenEfficiency,
 			Severity:       checks.Fail,
 			Status:         checks.StatusPass,
 			Recommendation: "Use JSON output",
 		},
 		{
-			CheckID:        "TH-1",
+			CheckID:        "FS-2",
 			CheckName:      "No interactive prompts",
-			Category:       checks.CatTerminalHygiene,
+			Category:       checks.CatFlowSafety,
 			Severity:       checks.Fail,
 			Status:         checks.StatusFail,
 			Detail:         "Detected interactive prompt",
 			Recommendation: "Remove prompts in non-TTY mode",
 		},
 		{
-			CheckID:        "IV-1",
+			CheckID:        "SA-2",
 			CheckName:      "Input validation",
-			Category:       checks.CatInputValidation,
+			Category:       checks.CatAutomationSafety,
 			Severity:       checks.Warn,
 			Status:         checks.StatusFail,
 			Detail:         "Missing validation",
 			Recommendation: "Validate all inputs",
 		},
 		{
-			CheckID:        "SD-1",
+			CheckID:        "SD-3",
 			CheckName:      "Schema available",
-			Category:       checks.CatSchemaDiscovery,
+			Category:       checks.CatSelfDescribing,
 			Severity:       checks.Info,
 			Status:         checks.StatusSkip,
 			Detail:         "Skipped",
@@ -96,23 +96,23 @@ func TestTextFormat_QuietMode(t *testing.T) {
 		t.Error("quiet mode should contain 'Score:'")
 	}
 
-	// Quiet mode should show fail-severity failures (TH-1 is Fail severity + StatusFail).
-	if !strings.Contains(output, "TH-1") {
-		t.Error("quiet mode should show fail-severity failure TH-1")
+	// Quiet mode should show fail-severity failures (FS-2 is Fail severity + StatusFail).
+	if !strings.Contains(output, "FS-2") {
+		t.Error("quiet mode should show fail-severity failure FS-2")
 	}
 
 	// Quiet mode should NOT show passing checks.
-	if strings.Contains(output, "SO-1") {
-		t.Error("quiet mode should not show passing check SO-1")
+	if strings.Contains(output, "TE-1") {
+		t.Error("quiet mode should not show passing check TE-1")
 	}
 
 	// Quiet mode should NOT show warn-severity failures (only fail-severity).
-	if strings.Contains(output, "IV-1") {
-		t.Error("quiet mode should not show warn-severity failure IV-1")
+	if strings.Contains(output, "SA-2") {
+		t.Error("quiet mode should not show warn-severity failure SA-2")
 	}
 
 	// Quiet mode should not show category headers.
-	if strings.Contains(output, "Structured Output") {
+	if strings.Contains(output, "Token Efficiency") {
 		t.Error("quiet mode should not contain category headers")
 	}
 }
@@ -129,14 +129,14 @@ func TestTextFormat_FullMode_CategoryHeaders(t *testing.T) {
 	output := buf.String()
 
 	// Should contain category headers.
-	if !strings.Contains(output, "Structured Output") {
-		t.Error("full mode should contain 'Structured Output' category header")
+	if !strings.Contains(output, "Token Efficiency") {
+		t.Error("full mode should contain 'Token Efficiency' category header")
 	}
-	if !strings.Contains(output, "Terminal Hygiene") {
-		t.Error("full mode should contain 'Terminal Hygiene' category header")
+	if !strings.Contains(output, "Flow Safety") {
+		t.Error("full mode should contain 'Flow Safety' category header")
 	}
-	if !strings.Contains(output, "Input Validation") {
-		t.Error("full mode should contain 'Input Validation' category header")
+	if !strings.Contains(output, "Automation Safety") {
+		t.Error("full mode should contain 'Automation Safety' category header")
 	}
 }
 
@@ -197,10 +197,10 @@ func TestTextFormat_FullMode_DetailsAndRecommendations(t *testing.T) {
 
 	// Failing checks should show detail and recommendation.
 	if !strings.Contains(output, "Detected interactive prompt") {
-		t.Error("expected detail for failing check TH-1")
+		t.Error("expected detail for failing check FS-2")
 	}
 	if !strings.Contains(output, "Remove prompts in non-TTY mode") {
-		t.Error("expected recommendation for failing check TH-1")
+		t.Error("expected recommendation for failing check FS-2")
 	}
 }
 
@@ -234,7 +234,7 @@ func TestTextFormat_DetailStripsANSI(t *testing.T) {
 		{
 			CheckID:        "X1",
 			CheckName:      "Test check",
-			Category:       checks.CatStructuredOutput,
+			Category:       checks.CatTokenEfficiency,
 			Severity:       checks.Fail,
 			Status:         checks.StatusFail,
 			Detail:         "found \x1b[31mbad\x1b[0m thing",
@@ -260,7 +260,7 @@ func TestTextFormat_DetailStripsANSI(t *testing.T) {
 
 func TestTextFormat_NoVersion(t *testing.T) {
 	results := []*checks.Result{
-		makeResult("X1", checks.CatStructuredOutput, checks.Fail, checks.StatusPass),
+		makeResult("X1", checks.CatTokenEfficiency, checks.Fail, checks.StatusPass),
 	}
 	r := NewReport(results, "/bin/tool", "", time.Second)
 

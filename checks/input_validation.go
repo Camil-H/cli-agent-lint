@@ -9,24 +9,22 @@ import (
 	"github.com/cli-agent-lint/cli-agent-lint/probe"
 )
 
-// ---------------------------------------------------------------------------
-// IV-1: Rejects path traversal
-// ---------------------------------------------------------------------------
+// SA-2: Rejects path traversal
 
-type checkIV1 struct{ BaseCheck }
+type checkSA2 struct{ BaseCheck }
 
-func newCheckIV1() *checkIV1 {
-	return &checkIV1{BaseCheck{
-		CheckID:             "IV-1",
+func newCheckSA2() *checkSA2 {
+	return &checkSA2{BaseCheck{
+		CheckID:             "SA-2",
 		CheckName:           "Rejects path traversal",
-		CheckCategory:       CatInputValidation,
+		CheckCategory:       CatAutomationSafety,
 		CheckSeverity:       Warn,
 		CheckMethod:         Active,
 		CheckRecommendation: "Canonicalize and sandbox all file path inputs. Reject path traversal sequences.",
 	}}
 }
 
-func (c *checkIV1) Run(ctx context.Context, input *Input) *Result {
+func (c *checkSA2) Run(ctx context.Context, input *Input) *Result {
 	if r := skipIfNoProber(c, input); r != nil {
 		return r
 	}
@@ -85,24 +83,22 @@ func (c *checkIV1) Run(ctx context.Context, input *Input) *Result {
 	return SkipResult(c, detail)
 }
 
-// ---------------------------------------------------------------------------
-// IV-2: Rejects control characters
-// ---------------------------------------------------------------------------
+// SA-3: Rejects control characters
 
-type checkIV2 struct{ BaseCheck }
+type checkSA3 struct{ BaseCheck }
 
-func newCheckIV2() *checkIV2 {
-	return &checkIV2{BaseCheck{
-		CheckID:             "IV-2",
+func newCheckSA3() *checkSA3 {
+	return &checkSA3{BaseCheck{
+		CheckID:             "SA-3",
 		CheckName:           "Rejects control characters",
-		CheckCategory:       CatInputValidation,
+		CheckCategory:       CatAutomationSafety,
 		CheckSeverity:       Warn,
 		CheckMethod:         Active,
 		CheckRecommendation: "Reject input containing control characters (ASCII < 0x20) to prevent injection.",
 	}}
 }
 
-func (c *checkIV2) Run(ctx context.Context, input *Input) *Result {
+func (c *checkSA3) Run(ctx context.Context, input *Input) *Result {
 	if r := skipIfNoProber(c, input); r != nil {
 		return r
 	}
@@ -144,24 +140,22 @@ func (c *checkIV2) Run(ctx context.Context, input *Input) *Result {
 		strings.Join(cmd.FullPath, " ")))
 }
 
-// ---------------------------------------------------------------------------
-// IV-3: Dry-run support
-// ---------------------------------------------------------------------------
+// SA-4: Dry-run support
 
-type checkIV3 struct{ BaseCheck }
+type checkSA4 struct{ BaseCheck }
 
-func newCheckIV3() *checkIV3 {
-	return &checkIV3{BaseCheck{
-		CheckID:             "IV-3",
+func newCheckSA4() *checkSA4 {
+	return &checkSA4{BaseCheck{
+		CheckID:             "SA-4",
 		CheckName:           "Dry-run support",
-		CheckCategory:       CatInputValidation,
+		CheckCategory:       CatAutomationSafety,
 		CheckSeverity:       Warn,
 		CheckMethod:         Passive,
 		CheckRecommendation: "Add `--dry-run` to all mutating commands so agents can validate before executing.",
 	}}
 }
 
-func (c *checkIV3) Run(ctx context.Context, input *Input) *Result {
+func (c *checkSA4) Run(ctx context.Context, input *Input) *Result {
 	idx := input.GetIndex()
 	if idx == nil {
 		return SkipResult(c, "no command index available")
@@ -188,12 +182,4 @@ func (c *checkIV3) Run(ctx context.Context, input *Input) *Result {
 	return FailResult(c, detail)
 }
 
-// ---------------------------------------------------------------------------
-// Registration
-// ---------------------------------------------------------------------------
 
-func registerInputValidationChecks(r *Registry) {
-	r.Register(newCheckIV1())
-	r.Register(newCheckIV2())
-	r.Register(newCheckIV3())
-}

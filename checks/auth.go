@@ -9,20 +9,18 @@ import (
 	"github.com/cli-agent-lint/cli-agent-lint/discovery"
 )
 
-// ---------------------------------------------------------------------------
-// AU-1: Env var auth support
-// ---------------------------------------------------------------------------
+// FS-4: Env var auth support
 
-type checkAU1 struct {
+type checkFS4 struct {
 	BaseCheck
 }
 
-func newCheckAU1() *checkAU1 {
-	return &checkAU1{
+func newCheckFS4() *checkFS4 {
+	return &checkFS4{
 		BaseCheck: BaseCheck{
-			CheckID:             "AU-1",
+			CheckID:             "FS-4",
 			CheckName:           "Env var auth support",
-			CheckCategory:       CatAuth,
+			CheckCategory:       CatFlowSafety,
 			CheckSeverity:       Warn,
 			CheckMethod:         Passive,
 			CheckRecommendation: "Support authentication via environment variables for headless/agent usage.",
@@ -36,17 +34,7 @@ func hasAuthEnvVarMention(text string) bool {
 	return envVarSuffixRe.MatchString(text)
 }
 
-func containsAuthTerm(text string) bool {
-	lower := strings.ToLower(text)
-	for _, term := range authRelatedTerms {
-		if strings.Contains(lower, term) {
-			return true
-		}
-	}
-	return false
-}
-
-func (c *checkAU1) Run(ctx context.Context, input *Input) *Result {
+func (c *checkFS4) Run(ctx context.Context, input *Input) *Result {
 	idx := input.GetIndex()
 	if idx == nil {
 		return SkipResult(c, "no command tree available")
@@ -90,20 +78,18 @@ func (c *checkAU1) Run(ctx context.Context, input *Input) *Result {
 	return FailResult(c, "auth-related content found but no env var or token flag for non-interactive auth")
 }
 
-// ---------------------------------------------------------------------------
-// AU-2: No mandatory interactive auth
-// ---------------------------------------------------------------------------
+// FS-5: No mandatory interactive auth
 
-type checkAU2 struct {
+type checkFS5 struct {
 	BaseCheck
 }
 
-func newCheckAU2() *checkAU2 {
-	return &checkAU2{
+func newCheckFS5() *checkFS5 {
+	return &checkFS5{
 		BaseCheck: BaseCheck{
-			CheckID:             "AU-2",
+			CheckID:             "FS-5",
 			CheckName:           "No mandatory interactive auth",
-			CheckCategory:       CatAuth,
+			CheckCategory:       CatFlowSafety,
 			CheckSeverity:       Fail,
 			CheckMethod:         Passive,
 			CheckRecommendation: "Provide non-interactive auth paths (API keys, service account files, token env vars) alongside interactive flows.",
@@ -134,7 +120,7 @@ func hasNonInteractiveAlternative(idx *discovery.CommandIndex) (bool, string) {
 	return false, ""
 }
 
-func (c *checkAU2) Run(ctx context.Context, input *Input) *Result {
+func (c *checkFS5) Run(ctx context.Context, input *Input) *Result {
 	idx := input.GetIndex()
 	if idx == nil {
 		return SkipResult(c, "no command tree available")
@@ -155,11 +141,4 @@ func (c *checkAU2) Run(ctx context.Context, input *Input) *Result {
 		strings.Join(loginCmd.FullPath, " ")))
 }
 
-// ---------------------------------------------------------------------------
-// Registration
-// ---------------------------------------------------------------------------
 
-func registerAuthChecks(r *Registry) {
-	r.Register(newCheckAU1())
-	r.Register(newCheckAU2())
-}

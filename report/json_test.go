@@ -12,35 +12,35 @@ import (
 func buildJSONReport() *Report {
 	results := []*checks.Result{
 		{
-			CheckID:        "SO-1",
+			CheckID:        "TE-1",
 			CheckName:      "JSON stdout",
-			Category:       checks.CatStructuredOutput,
+			Category:       checks.CatTokenEfficiency,
 			Severity:       checks.Fail,
 			Status:         checks.StatusPass,
 			Recommendation: "Use JSON output",
 		},
 		{
-			CheckID:        "TH-1",
+			CheckID:        "FS-2",
 			CheckName:      "No interactive prompts",
-			Category:       checks.CatTerminalHygiene,
+			Category:       checks.CatFlowSafety,
 			Severity:       checks.Fail,
 			Status:         checks.StatusFail,
 			Detail:         "Detected interactive prompt",
 			Recommendation: "Remove prompts in non-TTY mode",
 		},
 		{
-			CheckID:        "IV-1",
+			CheckID:        "SA-2",
 			CheckName:      "Input validation",
-			Category:       checks.CatInputValidation,
+			Category:       checks.CatAutomationSafety,
 			Severity:       checks.Warn,
 			Status:         checks.StatusFail,
 			Detail:         "Missing validation",
 			Recommendation: "Validate all inputs",
 		},
 		{
-			CheckID:        "SD-1",
+			CheckID:        "SD-3",
 			CheckName:      "Schema available",
-			Category:       checks.CatSchemaDiscovery,
+			Category:       checks.CatSelfDescribing,
 			Severity:       checks.Info,
 			Status:         checks.StatusSkip,
 		},
@@ -182,16 +182,16 @@ func TestJSONFormat_WarnSeverityStatus(t *testing.T) {
 		t.Fatalf("failed to unmarshal JSON: %v", err)
 	}
 
-	// IV-1 has Severity=Warn and Status=StatusFail. Its JSON status should be "warn", not "fail".
+	// SA-2 has Severity=Warn and Status=StatusFail. Its JSON status should be "warn", not "fail".
 	for _, c := range parsed.Checks {
-		if c.ID == "IV-1" {
+		if c.ID == "SA-2" {
 			if c.Status != "warn" {
-				t.Errorf("IV-1 (warn-severity, failed) should have status %q, got %q", "warn", c.Status)
+				t.Errorf("SA-2 (warn-severity, failed) should have status %q, got %q", "warn", c.Status)
 			}
 			return
 		}
 	}
-	t.Error("IV-1 not found in checks array")
+	t.Error("SA-2 not found in checks array")
 }
 
 func TestJSONFormat_FailSeverityStatusIsFail(t *testing.T) {
@@ -213,16 +213,16 @@ func TestJSONFormat_FailSeverityStatusIsFail(t *testing.T) {
 		t.Fatalf("failed to unmarshal JSON: %v", err)
 	}
 
-	// TH-1 has Severity=Fail and Status=StatusFail. Its JSON status should be "fail".
+	// FS-2 has Severity=Fail and Status=StatusFail. Its JSON status should be "fail".
 	for _, c := range parsed.Checks {
-		if c.ID == "TH-1" {
+		if c.ID == "FS-2" {
 			if c.Status != "fail" {
-				t.Errorf("TH-1 (fail-severity, failed) should have status %q, got %q", "fail", c.Status)
+				t.Errorf("FS-2 (fail-severity, failed) should have status %q, got %q", "fail", c.Status)
 			}
 			return
 		}
 	}
-	t.Error("TH-1 not found in checks array")
+	t.Error("FS-2 not found in checks array")
 }
 
 func TestJSONFormat_PassStatus(t *testing.T) {
@@ -245,14 +245,14 @@ func TestJSONFormat_PassStatus(t *testing.T) {
 	}
 
 	for _, c := range parsed.Checks {
-		if c.ID == "SO-1" {
+		if c.ID == "TE-1" {
 			if c.Status != "pass" {
-				t.Errorf("SO-1 (pass) should have status %q, got %q", "pass", c.Status)
+				t.Errorf("TE-1 (pass) should have status %q, got %q", "pass", c.Status)
 			}
 			return
 		}
 	}
-	t.Error("SO-1 not found in checks array")
+	t.Error("TE-1 not found in checks array")
 }
 
 func TestJSONFormat_SummaryFields(t *testing.T) {
@@ -418,32 +418,32 @@ func TestJSONFormat_CheckDetails(t *testing.T) {
 	}
 
 	for _, c := range parsed.Checks {
-		if c.ID == "TH-1" {
+		if c.ID == "FS-2" {
 			if c.Name != "No interactive prompts" {
-				t.Errorf("TH-1 name: got %q", c.Name)
+				t.Errorf("FS-2 name: got %q", c.Name)
 			}
-			if c.Category != string(checks.CatTerminalHygiene) {
-				t.Errorf("TH-1 category: got %q", c.Category)
+			if c.Category != string(checks.CatFlowSafety) {
+				t.Errorf("FS-2 category: got %q", c.Category)
 			}
 			if c.Severity != "fail" {
-				t.Errorf("TH-1 severity: got %q", c.Severity)
+				t.Errorf("FS-2 severity: got %q", c.Severity)
 			}
 			if c.Points != 0 {
-				t.Errorf("TH-1 points: got %d, want 0 (failed check)", c.Points)
+				t.Errorf("FS-2 points: got %d, want 0 (failed check)", c.Points)
 			}
 			if c.MaxPoints != 3 {
-				t.Errorf("TH-1 max_points: got %d, want 3", c.MaxPoints)
+				t.Errorf("FS-2 max_points: got %d, want 3", c.MaxPoints)
 			}
 			if c.Detail != "Detected interactive prompt" {
-				t.Errorf("TH-1 detail: got %q", c.Detail)
+				t.Errorf("FS-2 detail: got %q", c.Detail)
 			}
 			if c.Recommendation != "Remove prompts in non-TTY mode" {
-				t.Errorf("TH-1 recommendation: got %q", c.Recommendation)
+				t.Errorf("FS-2 recommendation: got %q", c.Recommendation)
 			}
 			return
 		}
 	}
-	t.Error("TH-1 not found in checks array")
+	t.Error("FS-2 not found in checks array")
 }
 
 func TestJSONFormat_SkipStatus(t *testing.T) {
@@ -468,18 +468,18 @@ func TestJSONFormat_SkipStatus(t *testing.T) {
 	}
 
 	for _, c := range parsed.Checks {
-		if c.ID == "SD-1" {
+		if c.ID == "SD-3" {
 			if c.Status != "skip" {
-				t.Errorf("SD-1 status: got %q, want %q", c.Status, "skip")
+				t.Errorf("SD-3 status: got %q, want %q", c.Status, "skip")
 			}
 			if c.Points != 0 {
-				t.Errorf("SD-1 points: got %d, want 0", c.Points)
+				t.Errorf("SD-3 points: got %d, want 0", c.Points)
 			}
 			if c.MaxPoints != 0 {
-				t.Errorf("SD-1 max_points: got %d, want 0", c.MaxPoints)
+				t.Errorf("SD-3 max_points: got %d, want 0", c.MaxPoints)
 			}
 			return
 		}
 	}
-	t.Error("SD-1 not found in checks array")
+	t.Error("SD-3 not found in checks array")
 }

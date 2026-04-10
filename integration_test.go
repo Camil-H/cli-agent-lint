@@ -240,15 +240,15 @@ func TestNoJSONCLI(t *testing.T) {
 
 	report := parseJSON(t, stdout)
 
-	// Verify SO-1 (JSON output support) fails.
-	so1 := getCheckByID(t, report, "SO-1")
+	// Verify TE-1 (JSON output support) fails.
+	so1 := getCheckByID(t, report, "TE-1")
 	if so1 == nil {
-		t.Fatal("SO-1 check not found in report")
+		t.Fatal("TE-1 check not found in report")
 	}
 
 	status, _ := so1["status"].(string)
 	if status != "fail" {
-		t.Errorf("expected SO-1 status 'fail' for no-json-cli, got %q", status)
+		t.Errorf("expected TE-1 status 'fail' for no-json-cli, got %q", status)
 	}
 }
 
@@ -267,15 +267,15 @@ func TestNoisyCLI(t *testing.T) {
 
 	report := parseJSON(t, stdout)
 
-	// Verify TH-1 (no ANSI in piped output) fails.
-	th1 := getCheckByID(t, report, "TH-1")
+	// Verify FS-2 (no ANSI in piped output) fails.
+	th1 := getCheckByID(t, report, "FS-2")
 	if th1 == nil {
-		t.Fatal("TH-1 check not found in report")
+		t.Fatal("FS-2 check not found in report")
 	}
 
 	status, _ := th1["status"].(string)
 	if status != "fail" && status != "warn" {
-		t.Errorf("expected TH-1 status 'fail' or 'warn' for noisy-cli, got %q", status)
+		t.Errorf("expected FS-2 status 'fail' or 'warn' for noisy-cli, got %q", status)
 	}
 }
 

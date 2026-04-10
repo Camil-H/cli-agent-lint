@@ -2,7 +2,7 @@
 
 ## What this tool does
 
-cli-agent-lint audits CLI tools for AI agent-readiness. It checks for structured output, terminal hygiene, input validation, schema discovery, auth patterns, and operational robustness.
+cli-agent-lint audits CLI tools for AI agent-readiness. It checks across five categories: flow safety, token efficiency, self-describing, automation safety, and predictability.
 
 ## Usage
 

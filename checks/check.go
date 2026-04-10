@@ -63,23 +63,21 @@ func ParseSeverity(s string) (Severity, error) {
 type Category string
 
 const (
-	CatStructuredOutput Category = "structured-output"
-	CatTerminalHygiene  Category = "terminal-hygiene"
-	CatInputValidation  Category = "input-validation"
-	CatSchemaDiscovery  Category = "schema-discovery"
-	CatAuth             Category = "auth"
-	CatOperational      Category = "operational"
+	CatFlowSafety      Category = "flow-safety"
+	CatTokenEfficiency  Category = "token-efficiency"
+	CatSelfDescribing   Category = "self-describing"
+	CatAutomationSafety Category = "automation-safety"
+	CatPredictability   Category = "predictability"
 )
 
 // AllCategories returns all valid categories in display order.
 func AllCategories() []Category {
 	return []Category{
-		CatStructuredOutput,
-		CatTerminalHygiene,
-		CatInputValidation,
-		CatSchemaDiscovery,
-		CatAuth,
-		CatOperational,
+		CatFlowSafety,
+		CatTokenEfficiency,
+		CatSelfDescribing,
+		CatAutomationSafety,
+		CatPredictability,
 	}
 }
 

@@ -10,20 +10,18 @@ import (
 	"github.com/cli-agent-lint/cli-agent-lint/probe"
 )
 
-// ---------------------------------------------------------------------------
-// TH-1: Non-TTY detection (no ANSI in pipes)
-// ---------------------------------------------------------------------------
+// FS-2: Non-TTY detection (no ANSI in pipes)
 
-type checkTH1 struct {
+type checkFS2 struct {
 	BaseCheck
 }
 
-func newCheckTH1() *checkTH1 {
-	return &checkTH1{
+func newCheckFS2() *checkFS2 {
+	return &checkFS2{
 		BaseCheck: BaseCheck{
-			CheckID:             "TH-1",
+			CheckID:             "FS-2",
 			CheckName:           "Non-TTY detection (no ANSI in pipes)",
-			CheckCategory:       CatTerminalHygiene,
+			CheckCategory:       CatFlowSafety,
 			CheckSeverity:       Fail,
 			CheckMethod:         Active,
 			CheckRecommendation: "Detect non-TTY stdout and disable color/formatting automatically.",
@@ -31,7 +29,7 @@ func newCheckTH1() *checkTH1 {
 	}
 }
 
-func (c *checkTH1) Run(ctx context.Context, input *Input) *Result {
+func (c *checkFS2) Run(ctx context.Context, input *Input) *Result {
 	if r := skipIfNoProber(c, input); r != nil {
 		return r
 	}
@@ -51,20 +49,18 @@ func (c *checkTH1) Run(ctx context.Context, input *Input) *Result {
 	return PassResult(c, "no ANSI escape sequences found in piped output")
 }
 
-// ---------------------------------------------------------------------------
-// TH-2: --no-color flag
-// ---------------------------------------------------------------------------
+// TE-3: --no-color flag
 
-type checkTH2 struct {
+type checkTE3 struct {
 	BaseCheck
 }
 
-func newCheckTH2() *checkTH2 {
-	return &checkTH2{
+func newCheckTE3() *checkTE3 {
+	return &checkTE3{
 		BaseCheck: BaseCheck{
-			CheckID:             "TH-2",
+			CheckID:             "TE-3",
 			CheckName:           "--no-color flag",
-			CheckCategory:       CatTerminalHygiene,
+			CheckCategory:       CatTokenEfficiency,
 			CheckSeverity:       Warn,
 			CheckMethod:         Passive,
 			CheckRecommendation: "Support `--no-color` flag and/or the `NO_COLOR` env var (see https://no-color.org).",
@@ -74,7 +70,7 @@ func newCheckTH2() *checkTH2 {
 
 var noColorHelpRe = regexp.MustCompile(`(?i)(--no-color|--color[= ]never|NO_COLOR)`)
 
-func (c *checkTH2) Run(ctx context.Context, input *Input) *Result {
+func (c *checkTE3) Run(ctx context.Context, input *Input) *Result {
 	if input.Tree == nil || input.Tree.Root == nil {
 		return SkipResult(c, "no command tree available")
 	}
@@ -91,20 +87,18 @@ func (c *checkTH2) Run(ctx context.Context, input *Input) *Result {
 	return FailResult(c, "no --no-color flag or NO_COLOR support detected")
 }
 
-// ---------------------------------------------------------------------------
-// TH-3: --quiet / --silent flag
-// ---------------------------------------------------------------------------
+// TE-4: --quiet / --silent flag
 
-type checkTH3 struct {
+type checkTE4 struct {
 	BaseCheck
 }
 
-func newCheckTH3() *checkTH3 {
-	return &checkTH3{
+func newCheckTE4() *checkTE4 {
+	return &checkTE4{
 		BaseCheck: BaseCheck{
-			CheckID:             "TH-3",
+			CheckID:             "TE-4",
 			CheckName:           "--quiet / --silent flag",
-			CheckCategory:       CatTerminalHygiene,
+			CheckCategory:       CatTokenEfficiency,
 			CheckSeverity:       Info,
 			CheckMethod:         Passive,
 			CheckRecommendation: "Add `--quiet` flag to suppress informational output, leaving only essential data.",
@@ -114,7 +108,7 @@ func newCheckTH3() *checkTH3 {
 
 var quietHelpRe = regexp.MustCompile(`(?i)(--quiet|--silent|-q\b)`)
 
-func (c *checkTH3) Run(ctx context.Context, input *Input) *Result {
+func (c *checkTE4) Run(ctx context.Context, input *Input) *Result {
 	if input.Tree == nil || input.Tree.Root == nil {
 		return SkipResult(c, "no command tree available")
 	}
@@ -131,20 +125,18 @@ func (c *checkTH3) Run(ctx context.Context, input *Input) *Result {
 	return FailResult(c, "no --quiet or --silent flag detected")
 }
 
-// ---------------------------------------------------------------------------
-// TH-4: No interactive prompts in non-TTY
-// ---------------------------------------------------------------------------
+// FS-3: No interactive prompts in non-TTY
 
-type checkTH4 struct {
+type checkFS3 struct {
 	BaseCheck
 }
 
-func newCheckTH4() *checkTH4 {
-	return &checkTH4{
+func newCheckFS3() *checkFS3 {
+	return &checkFS3{
 		BaseCheck: BaseCheck{
-			CheckID:             "TH-4",
+			CheckID:             "FS-3",
 			CheckName:           "No interactive prompts in non-TTY",
-			CheckCategory:       CatTerminalHygiene,
+			CheckCategory:       CatFlowSafety,
 			CheckSeverity:       Fail,
 			CheckMethod:         Active,
 			CheckRecommendation: "Never prompt for input when stdin is not a TTY. Fail fast with a clear error instead.",
@@ -154,7 +146,7 @@ func newCheckTH4() *checkTH4 {
 
 var promptRe = regexp.MustCompile(`(?i)(enter\b|password:|press\b|continue\?|y/n|\(yes/no\))`)
 
-func (c *checkTH4) Run(ctx context.Context, input *Input) *Result {
+func (c *checkFS3) Run(ctx context.Context, input *Input) *Result {
 	if r := skipIfNoProber(c, input); r != nil {
 		return r
 	}
@@ -206,20 +198,18 @@ func (c *checkTH4) Run(ctx context.Context, input *Input) *Result {
 	return PassResult(c, fmt.Sprintf("command %q exited without prompting", strings.Join(candidate.FullPath, " ")))
 }
 
-// ---------------------------------------------------------------------------
-// TH-5: Confirmation bypass for destructive commands
-// ---------------------------------------------------------------------------
+// SA-1: Confirmation bypass for destructive commands
 
-type checkTH5 struct {
+type checkSA1 struct {
 	BaseCheck
 }
 
-func newCheckTH5() *checkTH5 {
-	return &checkTH5{
+func newCheckSA1() *checkSA1 {
+	return &checkSA1{
 		BaseCheck: BaseCheck{
-			CheckID:             "TH-5",
+			CheckID:             "SA-1",
 			CheckName:           "Confirmation bypass for destructive commands",
-			CheckCategory:       CatTerminalHygiene,
+			CheckCategory:       CatAutomationSafety,
 			CheckSeverity:       Warn,
 			CheckMethod:         Passive,
 			CheckRecommendation: "Add a --yes or --force flag to destructive commands so agents can skip interactive confirmation.",
@@ -227,7 +217,7 @@ func newCheckTH5() *checkTH5 {
 	}
 }
 
-func (c *checkTH5) Run(ctx context.Context, input *Input) *Result {
+func (c *checkSA1) Run(ctx context.Context, input *Input) *Result {
 	idx := input.GetIndex()
 	if idx == nil {
 		return SkipResult(c, "no command index available")
@@ -255,14 +245,4 @@ func (c *checkTH5) Run(ctx context.Context, input *Input) *Result {
 	return FailResult(c, detail)
 }
 
-// ---------------------------------------------------------------------------
-// Registration
-// ---------------------------------------------------------------------------
 
-func registerTerminalHygieneChecks(r *Registry) {
-	r.Register(newCheckTH1())
-	r.Register(newCheckTH2())
-	r.Register(newCheckTH3())
-	r.Register(newCheckTH4())
-	r.Register(newCheckTH5())
-}

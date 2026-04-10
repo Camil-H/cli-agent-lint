@@ -352,12 +352,12 @@ func TestRun_WithFilter_SubsetOfResults(t *testing.T) {
 	target := goodCLIPath(t)
 	registry := checks.DefaultRegistry()
 
-	// Run with a category filter to get only structured-output checks.
+	// Run with a category filter to get only token-efficiency checks.
 	r := New(Config{
 		TargetPath:   target,
 		Registry:     registry,
 		ProbeTimeout: 10 * time.Second,
-		Filter:       &checks.Filter{Category: checks.CatStructuredOutput},
+		Filter:       &checks.Filter{Category: checks.CatTokenEfficiency},
 	})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
@@ -368,11 +368,11 @@ func TestRun_WithFilter_SubsetOfResults(t *testing.T) {
 		t.Fatalf("Run() with filter returned unexpected error: %v", err)
 	}
 
-	// Every result should be in the structured-output category.
+	// Every result should be in the token-efficiency category.
 	for _, result := range report.Results {
-		if result.Category != checks.CatStructuredOutput {
+		if result.Category != checks.CatTokenEfficiency {
 			t.Errorf("expected all results to be in category %q, got %q for check %s",
-				checks.CatStructuredOutput, result.Category, result.CheckID)
+				checks.CatTokenEfficiency, result.Category, result.CheckID)
 		}
 	}
 

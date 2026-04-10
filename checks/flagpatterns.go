@@ -1,25 +1,13 @@
 package checks
 
-// flagpatterns.go centralizes flag name patterns, help text search terms,
-// and command name patterns used across checks.
-
-// Structured Output (SO)
-
 var jsonOutputFlagNames = []string{"output", "format", "json", "o"}
 var stdinFlagNames = []string{"from-file", "input", "stdin"}
 var stdinHelpTerms = []string{"stdin", "standard input", "read from -", "pipe"}
 var dataInputFlagNames = []string{"file", "data", "body", "content", "payload", "path"}
 
-// Terminal Hygiene (TH)
-
 var confirmBypassFlagNames = []string{"yes", "force", "confirm", "assume-yes", "no-confirm", "non-interactive"}
 
-// Input Validation (IV)
-
-// dryRunFlagNames are long flag names without the -- prefix.
 var dryRunFlagNames = []string{"dry-run", "dryrun", "whatif", "simulate", "dry_run"}
-
-// Operational (OR)
 
 var timeoutFlagNames = []string{"timeout", "request-timeout"}
 
@@ -34,8 +22,6 @@ var networkIndicatorFlags = []string{"url", "endpoint", "host", "server", "api-u
 var networkHelpTerms = []string{"http://", "https://", "api endpoint", "rest api", "graphql", "webhook"}
 var filterFlagNames = []string{"fields", "select", "columns", "filter", "jq", "query", "field"}
 var exitCodeHelpTerms = []string{"exit code", "exit status", "return code", "exit codes"}
-
-// Auth (AU)
 
 var authTokenFlagNames = []string{
 	"token",

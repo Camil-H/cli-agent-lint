@@ -11,20 +11,18 @@ import (
 	"github.com/cli-agent-lint/cli-agent-lint/probe"
 )
 
-// ---------------------------------------------------------------------------
-// SO-1: JSON output support
-// ---------------------------------------------------------------------------
+// TE-1: JSON output support
 
-type checkSO1 struct {
+type checkTE1 struct {
 	BaseCheck
 }
 
-func newCheckSO1() *checkSO1 {
-	return &checkSO1{
+func newCheckTE1() *checkTE1 {
+	return &checkTE1{
 		BaseCheck: BaseCheck{
-			CheckID:             "SO-1",
+			CheckID:             "TE-1",
 			CheckName:           "JSON output support",
-			CheckCategory:       CatStructuredOutput,
+			CheckCategory:       CatTokenEfficiency,
 			CheckSeverity:       Fail,
 			CheckMethod:         Passive,
 			CheckRecommendation: "Add `--output json` flag to all commands that produce output.",
@@ -50,7 +48,7 @@ func findJSONOutputFlag(idx *discovery.CommandIndex) (*discovery.Flag, *discover
 	return nil, nil
 }
 
-func (c *checkSO1) Run(ctx context.Context, input *Input) *Result {
+func (c *checkTE1) Run(ctx context.Context, input *Input) *Result {
 	idx := input.GetIndex()
 	if idx == nil {
 		return SkipResult(c, "no command tree available")
@@ -65,20 +63,18 @@ func (c *checkSO1) Run(ctx context.Context, input *Input) *Result {
 	return FailResult(c, "no --output/--format/--json/-o flag with JSON support found in any command")
 }
 
-// ---------------------------------------------------------------------------
-// SO-2: Stderr vs stdout discipline
-// ---------------------------------------------------------------------------
+// FS-1: Stderr vs stdout discipline
 
-type checkSO2 struct {
+type checkFS1 struct {
 	BaseCheck
 }
 
-func newCheckSO2() *checkSO2 {
-	return &checkSO2{
+func newCheckFS1() *checkFS1 {
+	return &checkFS1{
 		BaseCheck: BaseCheck{
-			CheckID:             "SO-2",
+			CheckID:             "FS-1",
 			CheckName:           "Stderr vs stdout discipline",
-			CheckCategory:       CatStructuredOutput,
+			CheckCategory:       CatFlowSafety,
 			CheckSeverity:       Fail,
 			CheckMethod:         Active,
 			CheckRecommendation: "Send errors and diagnostics to stderr. Reserve stdout for data output only.",
@@ -86,7 +82,7 @@ func newCheckSO2() *checkSO2 {
 	}
 }
 
-func (c *checkSO2) Run(ctx context.Context, input *Input) *Result {
+func (c *checkFS1) Run(ctx context.Context, input *Input) *Result {
 	if r := skipIfNoProber(c, input); r != nil {
 		return r
 	}
@@ -121,20 +117,18 @@ func (c *checkSO2) Run(ctx context.Context, input *Input) *Result {
 	return PassResult(c, "no output on stdout for invalid subcommand (exit code signals error)")
 }
 
-// ---------------------------------------------------------------------------
-// SO-3: Error format is structured
-// ---------------------------------------------------------------------------
+// SD-1: Error format is structured
 
-type checkSO3 struct {
+type checkSD1 struct {
 	BaseCheck
 }
 
-func newCheckSO3() *checkSO3 {
-	return &checkSO3{
+func newCheckSD1() *checkSD1 {
+	return &checkSD1{
 		BaseCheck: BaseCheck{
-			CheckID:             "SO-3",
+			CheckID:             "SD-1",
 			CheckName:           "Error format is structured",
-			CheckCategory:       CatStructuredOutput,
+			CheckCategory:       CatSelfDescribing,
 			CheckSeverity:       Warn,
 			CheckMethod:         Active,
 			CheckRecommendation: "Emit structured JSON errors to stderr when `--output json` is set.",
@@ -142,15 +136,15 @@ func newCheckSO3() *checkSO3 {
 	}
 }
 
-func (c *checkSO3) Run(ctx context.Context, input *Input) *Result {
+func (c *checkSD1) Run(ctx context.Context, input *Input) *Result {
 	if r := skipIfNoProber(c, input); r != nil {
 		return r
 	}
 
-	// Cross-check dependency: SO-1 must have passed.
-	so1Result := input.ResultSet.Get("SO-1")
+	// Cross-check dependency: TE-1 must have passed.
+	so1Result := input.ResultSet.Get("TE-1")
 	if so1Result == nil || so1Result.Status != StatusPass {
-		return SkipResult(c, "skipped: no JSON output flag detected (SO-1 not passed)")
+		return SkipResult(c, "skipped: no JSON output flag detected (TE-1 not passed)")
 	}
 
 	flag, _ := findJSONOutputFlag(input.GetIndex())
@@ -203,20 +197,18 @@ func buildJSONFlagArg(f *discovery.Flag) string {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// SO-4: Version output is parseable
-// ---------------------------------------------------------------------------
+// SD-2: Version output is parseable
 
-type checkSO4 struct {
+type checkSD2 struct {
 	BaseCheck
 }
 
-func newCheckSO4() *checkSO4 {
-	return &checkSO4{
+func newCheckSD2() *checkSD2 {
+	return &checkSD2{
 		BaseCheck: BaseCheck{
-			CheckID:             "SO-4",
+			CheckID:             "SD-2",
 			CheckName:           "Version output is parseable",
-			CheckCategory:       CatStructuredOutput,
+			CheckCategory:       CatSelfDescribing,
 			CheckSeverity:       Warn,
 			CheckMethod:         Active,
 			CheckRecommendation: "Emit a clean semver string from `--version`. Support `--output json` for `{\"version\": \"x.y.z\"}`.",
@@ -227,7 +219,7 @@ func newCheckSO4() *checkSO4 {
 var semverRe = regexp.MustCompile(`v?(\d+\.\d+\.\d+)(?:[-+][a-zA-Z0-9.]+)*`)
 var versionWordRe = regexp.MustCompile(`(?i)\bversion\b`)
 
-func (c *checkSO4) Run(ctx context.Context, input *Input) *Result {
+func (c *checkSD2) Run(ctx context.Context, input *Input) *Result {
 	if r := skipIfNoProber(c, input); r != nil {
 		return r
 	}
@@ -272,20 +264,18 @@ func (c *checkSO4) Run(ctx context.Context, input *Input) *Result {
 	return FailResult(c, fmt.Sprintf("version output contains decorative text beyond semver: %q (extracted: %s)", truncate(output, 200), match))
 }
 
-// ---------------------------------------------------------------------------
-// SO-5: Stdin/pipe input support
-// ---------------------------------------------------------------------------
+// TE-2: Stdin/pipe input support
 
-type checkSO5 struct {
+type checkTE2 struct {
 	BaseCheck
 }
 
-func newCheckSO5() *checkSO5 {
-	return &checkSO5{
+func newCheckTE2() *checkTE2 {
+	return &checkTE2{
 		BaseCheck: BaseCheck{
-			CheckID:             "SO-5",
+			CheckID:             "TE-2",
 			CheckName:           "Stdin/pipe input support",
-			CheckCategory:       CatStructuredOutput,
+			CheckCategory:       CatTokenEfficiency,
 			CheckSeverity:       Info,
 			CheckMethod:         Passive,
 			CheckRecommendation: "Support reading input from stdin or --from-file to enable composable pipelines between tools.",
@@ -300,7 +290,7 @@ func hasDataInputCommands(idx *discovery.CommandIndex) bool {
 	return idx.HasFlag(dataInputFlagNames...)
 }
 
-func (c *checkSO5) Run(ctx context.Context, input *Input) *Result {
+func (c *checkTE2) Run(ctx context.Context, input *Input) *Result {
 	idx := input.GetIndex()
 	if idx == nil {
 		return SkipResult(c, "no command tree available")
@@ -321,17 +311,7 @@ func (c *checkSO5) Run(ctx context.Context, input *Input) *Result {
 	return FailResult(c, "no stdin/pipe input support detected")
 }
 
-// ---------------------------------------------------------------------------
-// Registration
-// ---------------------------------------------------------------------------
 
-func registerStructuredOutputChecks(r *Registry) {
-	r.Register(newCheckSO1())
-	r.Register(newCheckSO2())
-	r.Register(newCheckSO3())
-	r.Register(newCheckSO4())
-	r.Register(newCheckSO5())
-}
 
 func truncate(s string, maxLen int) string {
 	if len(s) <= maxLen {

@@ -155,18 +155,16 @@ func (f *TextFormatter) writeScore(w io.Writer, r *Report, p palette) {
 
 func categoryLabel(cat checks.Category) string {
 	switch cat {
-	case checks.CatStructuredOutput:
-		return "Structured Output"
-	case checks.CatTerminalHygiene:
-		return "Terminal Hygiene"
-	case checks.CatInputValidation:
-		return "Input Validation & Safety"
-	case checks.CatSchemaDiscovery:
-		return "Schema & Discoverability"
-	case checks.CatAuth:
-		return "Auth"
-	case checks.CatOperational:
-		return "Operational Robustness"
+	case checks.CatFlowSafety:
+		return "Flow Safety"
+	case checks.CatTokenEfficiency:
+		return "Token Efficiency"
+	case checks.CatSelfDescribing:
+		return "Self-Describing"
+	case checks.CatAutomationSafety:
+		return "Automation Safety"
+	case checks.CatPredictability:
+		return "Predictable & Verifiable"
 	default:
 		return string(cat)
 	}
