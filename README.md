@@ -1,6 +1,6 @@
 # cli-agent-lint
 
-Audit CLI tools for AI agent-readiness. Runs 26 checks across 5 categories and produces a letter-grade scorecard telling you how well your CLI plays with autonomous agents.
+Audit CLI tools for AI agent-readiness. Runs 28 checks across 5 categories and produces a letter-grade scorecard telling you how well your CLI plays with autonomous agents.
 
 ## Demo
 

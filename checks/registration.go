@@ -16,6 +16,8 @@ func registerTokenEfficiencyChecks(r *Registry) {
 	r.Register(newCheckTE4()) // --quiet / --silent flag
 	r.Register(newCheckTE5()) // Pagination support
 	r.Register(newCheckTE6()) // Field masks / response filtering
+	r.Register(newCheckTE7()) // Help output size
+	r.Register(newCheckTE8()) // Concise output mode
 }
 
 func registerSelfDescribingChecks(r *Registry) {

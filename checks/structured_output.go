@@ -313,6 +313,109 @@ func (c *checkTE2) Run(ctx context.Context, input *Input) *Result {
 
 
 
+// TE-7: Help output size
+
+const (
+	helpSizeWarnBytes = 40 * 1024  // 40 KB
+	helpSizeFailBytes = 100 * 1024 // 100 KB
+)
+
+type checkTE7 struct {
+	BaseCheck
+}
+
+func newCheckTE7() *checkTE7 {
+	return &checkTE7{
+		BaseCheck: BaseCheck{
+			CheckID:             "TE-7",
+			CheckName:           "Help output size",
+			CheckCategory:       CatTokenEfficiency,
+			CheckSeverity:       Fail,
+			CheckMethod:         Passive,
+			CheckRecommendation: "Keep `--help` output concise. Large help text fills agent context windows and degrades performance.",
+		},
+	}
+}
+
+func (c *checkTE7) Run(ctx context.Context, input *Input) *Result {
+	if input.Tree == nil || input.Tree.Root == nil {
+		return SkipResult(c, "no command tree available")
+	}
+
+	size := len(input.Tree.Root.RawHelp)
+	detail := fmt.Sprintf("root --help output is %s", formatBytes(size))
+
+	if size >= helpSizeFailBytes {
+		return FailResult(c, detail)
+	}
+	if size >= helpSizeWarnBytes {
+		return FailResult(c, detail)
+	}
+	return PassResult(c, detail)
+}
+
+func formatBytes(n int) string {
+	switch {
+	case n >= 1024*1024:
+		return fmt.Sprintf("%.1f MB", float64(n)/(1024*1024))
+	case n >= 1024:
+		return fmt.Sprintf("%.1f KB", float64(n)/1024)
+	default:
+		return fmt.Sprintf("%d bytes", n)
+	}
+}
+
+// TE-8: Concise output mode
+
+type checkTE8 struct {
+	BaseCheck
+}
+
+func newCheckTE8() *checkTE8 {
+	return &checkTE8{
+		BaseCheck: BaseCheck{
+			CheckID:             "TE-8",
+			CheckName:           "Concise output mode",
+			CheckCategory:       CatTokenEfficiency,
+			CheckSeverity:       Warn,
+			CheckMethod:         Passive,
+			CheckRecommendation: "Add a `--brief` or `--concise` flag that returns essential data without decorative formatting or verbose detail.",
+		},
+	}
+}
+
+var conciseFlagNames = []string{"brief", "concise", "short", "summary", "compact", "terse"}
+
+func (c *checkTE8) Run(ctx context.Context, input *Input) *Result {
+	idx := input.GetIndex()
+	if idx == nil {
+		return SkipResult(c, "no command tree available")
+	}
+
+	if idx.HasFlag(conciseFlagNames...) {
+		return PassResult(c, "found concise output flag (e.g. --brief, --concise, --short)")
+	}
+
+	// Check for format enum values like --output=short or --format=brief
+	for _, hit := range idx.FindFlagAll(jsonOutputFlagNames...) {
+		for _, v := range hit.Flag.EnumValues {
+			lower := strings.ToLower(v)
+			for _, name := range conciseFlagNames {
+				if lower == name {
+					return PassResult(c, fmt.Sprintf("found concise format value %q on --%s flag", v, hit.Flag.Name))
+				}
+			}
+		}
+	}
+
+	// No data-producing commands means concise mode isn't applicable
+	if len(idx.ListLike()) == 0 && len(idx.Mutating()) == 0 {
+		return PassResult(c, "no data-producing commands detected; concise mode not applicable")
+	}
+
+	return FailResult(c, "no --brief, --concise, or --short flag found")
+}
+
 func truncate(s string, maxLen int) string {
 	if len(s) <= maxLen {
 		return s

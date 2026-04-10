@@ -398,6 +398,118 @@ func TestTE2_PassNoDataInputCommands(t *testing.T) {
 	}
 }
 
+// TE-7: Help output size
+
+func TestTE7_PassSmallHelp(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		RawHelp:  "Usage: mycli [command]\n\nAvailable commands:\n  list\n  create\n",
+	}
+	check := newCheckTE7()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusPass {
+		t.Errorf("expected pass for small help, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestTE7_FailLargeHelp(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		RawHelp:  string(make([]byte, 101*1024)), // 101 KB
+	}
+	check := newCheckTE7()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusFail {
+		t.Errorf("expected fail for 101KB help, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestTE7_WarnMediumHelp(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		RawHelp:  string(make([]byte, 50*1024)), // 50 KB — between warn and fail thresholds
+	}
+	check := newCheckTE7()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusFail {
+		t.Errorf("expected fail (warn-severity) for 50KB help, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestTE7_SkipNilTree(t *testing.T) {
+	check := newCheckTE7()
+	result := check.Run(context.Background(), &Input{Tree: nil})
+	if result.Status != StatusSkip {
+		t.Errorf("expected skip, got %s", result.Status)
+	}
+}
+
+// TE-8: Concise output mode
+
+func TestTE8_PassWithBriefFlag(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Flags:    []*discovery.Flag{{Name: "brief", Description: "Brief output"}},
+		Subcommands: []*discovery.Command{
+			{Name: "list", FullPath: []string{"mycli", "list"}},
+		},
+	}
+	check := newCheckTE8()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusPass {
+		t.Errorf("expected pass for --brief flag, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestTE8_PassWithFormatShortEnum(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Flags: []*discovery.Flag{
+			{Name: "output", Description: "Output format", EnumValues: []string{"json", "table", "short"}},
+		},
+		Subcommands: []*discovery.Command{
+			{Name: "list", FullPath: []string{"mycli", "list"}},
+		},
+	}
+	check := newCheckTE8()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusPass {
+		t.Errorf("expected pass for --output=short enum value, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestTE8_PassNoDataCommands(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+	}
+	check := newCheckTE8()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusPass {
+		t.Errorf("expected pass (no data commands), got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestTE8_FailNoConciseFlag(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{Name: "list", FullPath: []string{"mycli", "list"}, IsListLike: true},
+		},
+	}
+	check := newCheckTE8()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusFail {
+		t.Errorf("expected fail for missing concise flag, got %s: %s", result.Status, result.Detail)
+	}
+}
+
 func TestTE2_FailMutatingWithoutStdin(t *testing.T) {
 	root := &discovery.Command{
 		Name:     "mycli",
