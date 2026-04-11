@@ -69,15 +69,6 @@ func (r *Registry) CategoryNames() []Category {
 	return cats
 }
 
-func (r *Registry) IDs() []string {
-	ids := make([]string, len(r.ordered))
-	for i, c := range r.ordered {
-		ids[i] = c.ID()
-	}
-	return ids
-}
-
-func (r *Registry) Len() int { return len(r.ordered) }
 
 type Filter struct {
 	Category    Category // empty means all

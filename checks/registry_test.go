@@ -76,31 +76,6 @@ func TestRegistry_All_ReturnsCopy(t *testing.T) {
 	}
 }
 
-func TestRegistry_Len(t *testing.T) {
-	r := NewRegistry()
-	if r.Len() != 0 {
-		t.Errorf("expected empty registry, got len %d", r.Len())
-	}
-	r.Register(newDummy("L-1", CatFlowSafety, Warn, Passive))
-	r.Register(newDummy("L-2", CatFlowSafety, Fail, Active))
-	if r.Len() != 2 {
-		t.Errorf("expected len 2, got %d", r.Len())
-	}
-}
-
-func TestRegistry_IDs(t *testing.T) {
-	r := NewRegistry()
-	r.Register(newDummy("ID-A", CatTokenEfficiency, Warn, Passive))
-	r.Register(newDummy("ID-B", CatFlowSafety, Fail, Active))
-
-	ids := r.IDs()
-	if len(ids) != 2 {
-		t.Fatalf("expected 2 IDs, got %d", len(ids))
-	}
-	if ids[0] != "ID-A" || ids[1] != "ID-B" {
-		t.Errorf("unexpected IDs: %v", ids)
-	}
-}
 
 func TestRegistry_DuplicatePanics(t *testing.T) {
 	r := NewRegistry()
@@ -244,9 +219,8 @@ func TestRegistry_CategoryNames(t *testing.T) {
 func TestDefaultRegistry_HasAllChecks(t *testing.T) {
 	r := DefaultRegistry()
 
-	// We expect at least TE-1..TE-2, FS-2..SA-1, SA-2..SA-4, SD-3..SD-6, FS-4..FS-5, FS-6..PV-4 = 26 checks.
-	if r.Len() < 26 {
-		t.Errorf("expected at least 26 checks in default registry, got %d", r.Len())
+	if len(r.All()) < 26 {
+		t.Errorf("expected at least 26 checks in default registry, got %d", len(r.All()))
 	}
 
 	expectedIDs := []string{

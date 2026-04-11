@@ -97,7 +97,7 @@ func TestRun_GoodCLI_NoError(t *testing.T) {
 func TestRun_GoodCLI_ReportHasAllChecks(t *testing.T) {
 	target := goodCLIPath(t)
 	registry := checks.DefaultRegistry()
-	expectedCount := registry.Len()
+	expectedCount := len(registry.All())
 
 	r := New(Config{
 		TargetPath:   target,
@@ -377,8 +377,8 @@ func TestRun_WithFilter_SubsetOfResults(t *testing.T) {
 	}
 
 	// Should be fewer results than the full registry.
-	if len(report.Results) >= registry.Len() {
+	if len(report.Results) >= len(registry.All()) {
 		t.Errorf("expected filtered results (%d) to be fewer than total checks (%d)",
-			len(report.Results), registry.Len())
+			len(report.Results), len(registry.All()))
 	}
 }

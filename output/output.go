@@ -62,13 +62,10 @@ func New(cfg Config) *Output {
 	}
 }
 
-func (o *Output) Format() string    { return o.format }
-func (o *Output) IsJSON() bool      { return o.format == "json" }
-func (o *Output) NoColor() bool     { return o.noColor }
-func (o *Output) IsQuiet() bool     { return o.quiet }
-func (o *Output) IsTTY() bool       { return o.isTTY }
+func (o *Output) IsJSON() bool          { return o.format == "json" }
+func (o *Output) NoColor() bool         { return o.noColor }
+func (o *Output) IsQuiet() bool         { return o.quiet }
 func (o *Output) DataWriter() io.Writer { return o.stdout }
-func (o *Output) DiagWriter() io.Writer { return o.stderr }
 
 func (o *Output) Diag(format string, args ...any) {
 	if o.quiet {
@@ -123,12 +120,6 @@ func (e *CLIError) Error() string {
 
 func (e *CLIError) Unwrap() error { return e.Err }
 
-func NewCLIError(err error, format string, args ...any) *CLIError {
-	return &CLIError{
-		Err:     err,
-		Message: fmt.Sprintf(format, args...),
-	}
-}
 
 type CodedError struct {
 	Err     error
@@ -145,14 +136,6 @@ func (e *CodedError) Error() string {
 
 func (e *CodedError) Unwrap() error { return e.Err }
 
-func NewCodedError(code string, format string, args ...any) *CodedError {
-	msg := fmt.Sprintf(format, args...)
-	return &CodedError{
-		Err:     fmt.Errorf("%s: %s", code, msg),
-		Code:    code,
-		Message: msg,
-	}
-}
 
 type CheckFailedError struct{}
 
