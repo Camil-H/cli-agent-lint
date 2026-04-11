@@ -1,6 +1,9 @@
 package discovery
 
-import "strings"
+import (
+	"strings"
+	"sync"
+)
 
 type FlagHit struct {
 	Cmd  *Command
@@ -15,18 +18,13 @@ type CommandIndex struct {
 	destructive []*Command
 	listLike    []*Command
 	readOnly    []*Command
-	// fileAccepting contains commands that look like they accept file-path input.
 	fileAccepting []*Command
-	// stringInput contains commands that accept string-typed flags or positional args.
-	stringInput []*Command
-	// flags maps lowercase flag name -> all (command, flag) pairs across the tree.
-	flags map[string][]FlagHit
-	// cmds maps lowercase command name -> all commands with that name.
-	cmds map[string][]*Command
-	// lowerHelp caches strings.ToLower(cmd.RawHelp) per command.
-	lowerHelp map[*Command]string
-	// cmdFlags maps each command to a set of its lowercase flag names for O(1) lookup.
-	cmdFlags map[*Command]map[string]bool
+	stringInput   []*Command
+	flags         map[string][]FlagHit
+	cmds          map[string][]*Command
+	lowerHelp   map[*Command]string // lazily populated by LowerHelp()
+	lowerHelpMu sync.RWMutex
+	cmdFlags    map[*Command]map[string]bool
 }
 
 func NewIndex(root *Command) *CommandIndex {
@@ -64,40 +62,26 @@ func NewIndex(root *Command) *CommandIndex {
 			idx.stringInput = append(idx.stringInput, cmd)
 		}
 
-		lower := strings.ToLower(cmd.Name)
-		idx.cmds[lower] = append(idx.cmds[lower], cmd)
+		cmdNameLower := strings.ToLower(cmd.Name)
+		idx.cmds[cmdNameLower] = append(idx.cmds[cmdNameLower], cmd)
 
-		// Build per-command flag name set for O(1) lookup.
-		flagSet := make(map[string]bool)
-		for _, f := range cmd.Flags {
-			nameLower := strings.ToLower(f.Name)
-			idx.flags[nameLower] = append(idx.flags[nameLower], FlagHit{Cmd: cmd, Flag: f})
-			if f.ShortName != "" {
-				idx.flags[strings.ToLower(f.ShortName)] = append(idx.flags[strings.ToLower(f.ShortName)], FlagHit{Cmd: cmd, Flag: f})
-			}
-			if nameLower != "" {
-				flagSet[nameLower] = true
-			}
-			if f.ShortName != "" {
-				flagSet[strings.ToLower(f.ShortName)] = true
-			}
-		}
-		for _, f := range cmd.InheritedFlags {
-			nameLower := strings.ToLower(f.Name)
-			idx.flags[nameLower] = append(idx.flags[nameLower], FlagHit{Cmd: cmd, Flag: f})
-			if f.ShortName != "" {
-				idx.flags[strings.ToLower(f.ShortName)] = append(idx.flags[strings.ToLower(f.ShortName)], FlagHit{Cmd: cmd, Flag: f})
-			}
-			if nameLower != "" {
-				flagSet[nameLower] = true
-			}
-			if f.ShortName != "" {
-				flagSet[strings.ToLower(f.ShortName)] = true
+		flagSet := make(map[string]bool, len(cmd.Flags)+len(cmd.InheritedFlags))
+		for _, flags := range [][]*Flag{cmd.Flags, cmd.InheritedFlags} {
+			for _, f := range flags {
+				hit := FlagHit{Cmd: cmd, Flag: f}
+				if f.Name != "" {
+					nameLower := strings.ToLower(f.Name)
+					idx.flags[nameLower] = append(idx.flags[nameLower], hit)
+					flagSet[nameLower] = true
+				}
+				if f.ShortName != "" {
+					shortLower := strings.ToLower(f.ShortName)
+					idx.flags[shortLower] = append(idx.flags[shortLower], hit)
+					flagSet[shortLower] = true
+				}
 			}
 		}
 		idx.cmdFlags[cmd] = flagSet
-
-		idx.lowerHelp[cmd] = strings.ToLower(cmd.RawHelp)
 	})
 
 	return idx
@@ -215,13 +199,25 @@ func (idx *CommandIndex) CommandsByName(name string) []*Command {
 }
 
 func (idx *CommandIndex) LowerHelp(cmd *Command) string {
-	return idx.lowerHelp[cmd]
+	idx.lowerHelpMu.RLock()
+	if h, ok := idx.lowerHelp[cmd]; ok {
+		idx.lowerHelpMu.RUnlock()
+		return h
+	}
+	idx.lowerHelpMu.RUnlock()
+
+	h := strings.ToLower(cmd.RawHelp)
+
+	idx.lowerHelpMu.Lock()
+	idx.lowerHelp[cmd] = h
+	idx.lowerHelpMu.Unlock()
+	return h
 }
 
 func (idx *CommandIndex) HelpContains(keyword string) (*Command, bool) {
 	lower := strings.ToLower(keyword)
 	for _, cmd := range idx.all {
-		if strings.Contains(idx.lowerHelp[cmd], lower) {
+		if strings.Contains(idx.LowerHelp(cmd), lower) {
 			return cmd, true
 		}
 	}
@@ -234,7 +230,7 @@ func (idx *CommandIndex) HelpContainsAny(keywords ...string) (*Command, bool) {
 		lowered[i] = strings.ToLower(kw)
 	}
 	for _, cmd := range idx.all {
-		h := idx.lowerHelp[cmd]
+		h := idx.LowerHelp(cmd)
 		for _, kw := range lowered {
 			if strings.Contains(h, kw) {
 				return cmd, true
