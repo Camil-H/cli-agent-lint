@@ -87,6 +87,12 @@ func (r *Runner) Run(ctx context.Context, progressFn ProgressFunc) (*report.Repo
 		}
 	}
 
+	concurrency := r.cfg.Concurrency
+	if concurrency <= 0 {
+		concurrency = max(4, runtime.NumCPU())
+	}
+	sem := make(chan struct{}, concurrency)
+
 	results := make([]*checks.Result, 0, total)
 	var mu sync.Mutex
 	current := 0
@@ -100,24 +106,20 @@ func (r *Runner) Run(ctx context.Context, progressFn ProgressFunc) (*report.Repo
 		progressFn("checks", current, total, res.CheckID)
 	}
 
+	// Passive checks run first so cross-check dependencies
+	// (e.g., SD-1 reads TE-1) are satisfied before active checks start.
 	var wg sync.WaitGroup
 	for _, c := range passive {
 		wg.Add(1)
 		go func(c checks.Check) {
 			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
 			res := c.Run(ctx, input)
 			addResult(res)
 		}(c)
 	}
 	wg.Wait()
-
-	// Active checks run after passive ones so cross-check dependencies
-	// (e.g., SD-1 reads TE-1) are already satisfied.
-	concurrency := r.cfg.Concurrency
-	if concurrency <= 0 {
-		concurrency = max(4, runtime.NumCPU())
-	}
-	sem := make(chan struct{}, concurrency)
 
 	for _, c := range active {
 		wg.Add(1)
