@@ -76,6 +76,7 @@ func (f *JSONFormatter) Format(w io.Writer, r *Report) error {
 		},
 	}
 
+	jr.Checks = make([]jsonCheck, 0, len(r.Results))
 	for _, res := range r.Results {
 		jc := jsonCheck{
 			ID:             res.CheckID,
@@ -95,6 +96,7 @@ func (f *JSONFormatter) Format(w io.Writer, r *Report) error {
 		jr.Checks = append(jr.Checks, jc)
 	}
 
+	jr.Categories = make([]jsonCategory, 0, len(r.Categories))
 	for _, cs := range r.Categories {
 		jr.Categories = append(jr.Categories, jsonCategory{
 			Name:       string(cs.Category),

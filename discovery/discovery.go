@@ -70,14 +70,6 @@ func (c *Command) Walk(fn func(*Command)) {
 	}
 }
 
-func (c *Command) AllCommands() []*Command {
-	var result []*Command
-	c.Walk(func(cmd *Command) {
-		result = append(result, cmd)
-	})
-	return result
-}
-
 type CommandTree struct {
 	Root            *Command
 	TargetPath      string
@@ -122,7 +114,7 @@ func Discover(ctx context.Context, p *probe.Prober, opts DiscoverOpts) (*Command
 	root.RawHelp = helpText
 
 	if len(opts.Subcommands) > 0 {
-		filtered := make([]*Command, 0)
+		filtered := make([]*Command, 0, len(opts.Subcommands))
 		for _, sub := range root.Subcommands {
 			for _, name := range opts.Subcommands {
 				if sub.Name == name {
@@ -154,9 +146,10 @@ func discoverSubcommands(ctx context.Context, p *probe.Prober, parent *Command, 
 	}
 
 	// Skip help/completion subcommands.
-	var toProcess []*Command
+	toProcess := make([]*Command, 0, len(parent.Subcommands))
 	for _, sub := range parent.Subcommands {
-		sub.FullPath = append(append([]string{}, parent.FullPath...), sub.Name)
+		fp := make([]string, 0, len(parent.FullPath)+1)
+		sub.FullPath = append(append(fp, parent.FullPath...), sub.Name)
 		if sub.Name == "help" || sub.Name == "completion" || sub.Name == "completions" {
 			continue
 		}
@@ -514,8 +507,8 @@ func parseUsageFlags(lines []string) []*Flag {
 }
 
 func deduplicateFlags(flags []*Flag) []*Flag {
-	seen := make(map[string]bool)
-	var result []*Flag
+	seen := make(map[string]bool, len(flags))
+	result := make([]*Flag, 0, len(flags))
 	for _, f := range flags {
 		key := f.Name
 		if key == "" {

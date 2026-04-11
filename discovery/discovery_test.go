@@ -683,55 +683,6 @@ func TestCommand_Walk(t *testing.T) {
 	})
 }
 
-func TestCommand_AllCommands(t *testing.T) {
-	root := &Command{
-		Name: "root",
-		Subcommands: []*Command{
-			{
-				Name: "a",
-				Subcommands: []*Command{
-					{Name: "a1"},
-				},
-			},
-			{Name: "b"},
-		},
-	}
-
-	t.Run("returns_all_commands_in_tree", func(t *testing.T) {
-		all := root.AllCommands()
-		if len(all) != 4 {
-			t.Fatalf("AllCommands() returned %d; want 4", len(all))
-		}
-		names := make(map[string]bool)
-		for _, cmd := range all {
-			names[cmd.Name] = true
-		}
-		for _, want := range []string{"root", "a", "a1", "b"} {
-			if !names[want] {
-				t.Errorf("expected %q in AllCommands(); not found", want)
-			}
-		}
-	})
-
-	t.Run("first_element_is_root", func(t *testing.T) {
-		all := root.AllCommands()
-		if all[0].Name != "root" {
-			t.Errorf("AllCommands()[0].Name = %q; want %q", all[0].Name, "root")
-		}
-	})
-
-	t.Run("leaf_returns_self", func(t *testing.T) {
-		leaf := &Command{Name: "leaf"}
-		all := leaf.AllCommands()
-		if len(all) != 1 {
-			t.Fatalf("leaf AllCommands() returned %d; want 1", len(all))
-		}
-		if all[0].Name != "leaf" {
-			t.Errorf("leaf AllCommands()[0].Name = %q; want %q", all[0].Name, "leaf")
-		}
-	})
-}
-
 // Tests for enum detection
 
 func TestParseEnumValues(t *testing.T) {
