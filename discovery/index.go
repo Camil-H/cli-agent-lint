@@ -22,17 +22,22 @@ type CommandIndex struct {
 	stringInput   []*Command
 	flags         map[string][]FlagHit
 	cmds          map[string][]*Command
-	lowerHelp   map[*Command]string // lazily populated by LowerHelp()
-	lowerHelpMu sync.RWMutex
-	cmdFlags    map[*Command]map[string]bool
+	lowerHelp      map[*Command]string // lazily populated by LowerHelp()
+	lowerHelpMu    sync.RWMutex
+	helpHits       map[string]*Command // keyword -> first command containing it (inverted index)
+	helpHitsMu     sync.RWMutex
+	helpMisses     map[string]bool // keywords confirmed absent from all help text
+	cmdFlags       map[*Command]map[string]bool
 }
 
 func NewIndex(root *Command) *CommandIndex {
 	idx := &CommandIndex{
-		flags:    make(map[string][]FlagHit),
-		cmds:     make(map[string][]*Command),
-		lowerHelp: make(map[*Command]string),
-		cmdFlags: make(map[*Command]map[string]bool),
+		flags:      make(map[string][]FlagHit),
+		cmds:       make(map[string][]*Command),
+		lowerHelp:  make(map[*Command]string),
+		helpHits:   make(map[string]*Command),
+		helpMisses: make(map[string]bool),
+		cmdFlags:   make(map[*Command]map[string]bool),
 	}
 
 	root.Walk(func(cmd *Command) {
@@ -215,22 +220,44 @@ func (idx *CommandIndex) LowerHelp(cmd *Command) string {
 }
 
 func (idx *CommandIndex) HelpContains(keyword string) (*Command, bool) {
-	for _, cmd := range idx.all {
-		if strings.Contains(idx.LowerHelp(cmd), keyword) {
+	return idx.helpContainsOne(keyword)
+}
+
+func (idx *CommandIndex) HelpContainsAny(keywords ...string) (*Command, bool) {
+	for _, kw := range keywords {
+		if cmd, ok := idx.helpContainsOne(kw); ok {
 			return cmd, true
 		}
 	}
 	return nil, false
 }
 
-func (idx *CommandIndex) HelpContainsAny(keywords ...string) (*Command, bool) {
+// helpContainsOne checks if any command's help text contains the keyword.
+// Results are cached: first lookup scans all commands, subsequent lookups are O(1).
+func (idx *CommandIndex) helpContainsOne(keyword string) (*Command, bool) {
+	idx.helpHitsMu.RLock()
+	if cmd, ok := idx.helpHits[keyword]; ok {
+		idx.helpHitsMu.RUnlock()
+		return cmd, true
+	}
+	if idx.helpMisses[keyword] {
+		idx.helpHitsMu.RUnlock()
+		return nil, false
+	}
+	idx.helpHitsMu.RUnlock()
+
+	// Cache miss — scan all commands.
 	for _, cmd := range idx.all {
-		h := idx.LowerHelp(cmd)
-		for _, kw := range keywords {
-			if strings.Contains(h, kw) {
-				return cmd, true
-			}
+		if strings.Contains(idx.LowerHelp(cmd), keyword) {
+			idx.helpHitsMu.Lock()
+			idx.helpHits[keyword] = cmd
+			idx.helpHitsMu.Unlock()
+			return cmd, true
 		}
 	}
+
+	idx.helpHitsMu.Lock()
+	idx.helpMisses[keyword] = true
+	idx.helpHitsMu.Unlock()
 	return nil, false
 }
