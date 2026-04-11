@@ -9,9 +9,14 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 )
+
+var bufPool = sync.Pool{
+	New: func() any { return new(bytes.Buffer) },
+}
 
 // 10 MiB cap prevents unbounded memory growth from misbehaving target CLIs.
 const maxOutputBytes = 10 * 1024 * 1024
@@ -152,20 +157,27 @@ func (p *Prober) Run(ctx context.Context, opts Opts) (*Result, error) {
 		cmd.Stdin = p.devnull
 	}
 
-	var stdoutBuf, stderrBuf bytes.Buffer
-	cmd.Stdout = &limitedWriter{buf: &stdoutBuf, remaining: maxOutputBytes}
-	cmd.Stderr = &limitedWriter{buf: &stderrBuf, remaining: maxOutputBytes}
+	stdoutBuf := bufPool.Get().(*bytes.Buffer)
+	stderrBuf := bufPool.Get().(*bytes.Buffer)
+	stdoutBuf.Reset()
+	stderrBuf.Reset()
+
+	cmd.Stdout = &limitedWriter{buf: stdoutBuf, remaining: maxOutputBytes}
+	cmd.Stderr = &limitedWriter{buf: stderrBuf, remaining: maxOutputBytes}
 	cmd.Env = p.buildEnv(opts.Env)
 
 	start := time.Now()
 	err := cmd.Run()
 	duration := time.Since(start)
 
+	// Copy buffer contents before returning them to the pool.
 	result := &Result{
-		Stdout:   stdoutBuf.Bytes(),
-		Stderr:   stderrBuf.Bytes(),
+		Stdout:   bytes.Clone(stdoutBuf.Bytes()),
+		Stderr:   bytes.Clone(stderrBuf.Bytes()),
 		Duration: duration,
 	}
+	bufPool.Put(stdoutBuf)
+	bufPool.Put(stderrBuf)
 
 	if ctx.Err() == context.DeadlineExceeded {
 		result.TimedOut = true
