@@ -215,9 +215,8 @@ func (idx *CommandIndex) LowerHelp(cmd *Command) string {
 }
 
 func (idx *CommandIndex) HelpContains(keyword string) (*Command, bool) {
-	lower := strings.ToLower(keyword)
 	for _, cmd := range idx.all {
-		if strings.Contains(idx.LowerHelp(cmd), lower) {
+		if strings.Contains(idx.LowerHelp(cmd), keyword) {
 			return cmd, true
 		}
 	}
@@ -225,13 +224,9 @@ func (idx *CommandIndex) HelpContains(keyword string) (*Command, bool) {
 }
 
 func (idx *CommandIndex) HelpContainsAny(keywords ...string) (*Command, bool) {
-	lowered := make([]string, len(keywords))
-	for i, kw := range keywords {
-		lowered[i] = strings.ToLower(kw)
-	}
 	for _, cmd := range idx.all {
 		h := idx.LowerHelp(cmd)
-		for _, kw := range lowered {
+		for _, kw := range keywords {
 			if strings.Contains(h, kw) {
 				return cmd, true
 			}

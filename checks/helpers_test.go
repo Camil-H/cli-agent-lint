@@ -1,6 +1,7 @@
 package checks
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/Camil-H/cli-agent-lint/discovery"
@@ -21,6 +22,35 @@ func makeInput(root *discovery.Command) *Input {
 		idx = discovery.NewIndex(root)
 	}
 	return &Input{Tree: tree, Index: idx}
+}
+
+func TestFlagPatterns_AllLowercase(t *testing.T) {
+	patterns := map[string][]string{
+		"jsonOutputFlagNames":        jsonOutputFlagNames,
+		"stdinFlagNames":             stdinFlagNames,
+		"stdinHelpTerms":             stdinHelpTerms,
+		"dataInputFlagNames":         dataInputFlagNames,
+		"confirmBypassFlagNames":     confirmBypassFlagNames,
+		"dryRunFlagNames":            dryRunFlagNames,
+		"timeoutFlagNames":           timeoutFlagNames,
+		"paginationFlagNames":        paginationFlagNames,
+		"retryFlagNames":             retryFlagNames,
+		"retryHelpTerms":             retryHelpTerms,
+		"networkIndicatorFlags":      networkIndicatorFlags,
+		"networkHelpTerms":           networkHelpTerms,
+		"filterFlagNames":            filterFlagNames,
+		"exitCodeHelpTerms":          exitCodeHelpTerms,
+		"authTokenFlagNames":         authTokenFlagNames,
+		"authRelatedTerms":           authRelatedTerms,
+		"nonInteractiveAuthFlagNames": nonInteractiveAuthFlagNames,
+	}
+	for name, values := range patterns {
+		for _, v := range values {
+			if v != strings.ToLower(v) {
+				t.Errorf("%s contains non-lowercase value %q — HelpContains/HelpContainsAny compare against lowercased help text", name, v)
+			}
+		}
+	}
 }
 
 func TestTruncate(t *testing.T) {

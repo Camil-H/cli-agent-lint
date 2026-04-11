@@ -139,7 +139,7 @@ func (c *checkTE3) Run(ctx context.Context, input *Input) *Result {
 		return PassResult(c, "found --no-color or --color flag")
 	}
 
-	if _, ok := idx.HelpContainsAny("NO_COLOR", "--no-color", "--color never", "--color=never"); ok {
+	if _, ok := idx.HelpContainsAny("no_color", "--no-color", "--color never", "--color=never"); ok {
 		return PassResult(c, "found color-control reference in help text")
 	}
 
