@@ -464,3 +464,76 @@ func TestPV5_FailNoEffectTerms(t *testing.T) {
 		t.Errorf("expected fail for missing effect terms, got %s: %s", result.Status, result.Detail)
 	}
 }
+
+// PV-6: Long-running operation support
+
+func TestPV6_PassNoLongRunning(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{Name: "list", FullPath: []string{"mycli", "list"}, IsListLike: true},
+			{Name: "create", FullPath: []string{"mycli", "create"}, IsMutating: true},
+		},
+	}
+	check := newCheckPV6()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusPass {
+		t.Errorf("expected pass (no long-running commands), got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestPV6_PassWithWaitFlag(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{Name: "deploy", FullPath: []string{"mycli", "deploy"},
+				Flags: []*discovery.Flag{{Name: "wait", Description: "Wait for completion"}}},
+		},
+	}
+	check := newCheckPV6()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusPass {
+		t.Errorf("expected pass for --wait flag, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestPV6_PassWithStatusSubcommand(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{Name: "deploy", FullPath: []string{"mycli", "deploy"}},
+			{Name: "status", FullPath: []string{"mycli", "status"}},
+		},
+	}
+	check := newCheckPV6()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusPass {
+		t.Errorf("expected pass for status subcommand, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestPV6_FailDeployNoAsync(t *testing.T) {
+	root := &discovery.Command{
+		Name:     "mycli",
+		FullPath: []string{"mycli"},
+		Subcommands: []*discovery.Command{
+			{Name: "deploy", FullPath: []string{"mycli", "deploy"}},
+		},
+	}
+	check := newCheckPV6()
+	result := check.Run(context.Background(), makeInput(root))
+	if result.Status != StatusFail {
+		t.Errorf("expected fail for deploy without async support, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestPV6_SkipNilTree(t *testing.T) {
+	check := newCheckPV6()
+	result := check.Run(context.Background(), &Input{Tree: nil})
+	if result.Status != StatusSkip {
+		t.Errorf("expected skip, got %s", result.Status)
+	}
+}

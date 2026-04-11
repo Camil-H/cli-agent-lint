@@ -229,3 +229,65 @@ func (c *checkPV5) Run(ctx context.Context, input *Input) *Result {
 
 	return FailResult(c, "mutating commands found but no effect-reporting terms in help text")
 }
+
+// PV-6: Async / long-running operation support
+
+type checkPV6 struct {
+	BaseCheck
+}
+
+func newCheckPV6() *checkPV6 {
+	return &checkPV6{
+		BaseCheck: BaseCheck{
+			CheckID:             "PV-6",
+			CheckName:           "Long-running operation support",
+			CheckCategory:       CatPredictability,
+			CheckSeverity:       Info,
+			CheckMethod:         Passive,
+			CheckRecommendation: "Add `--wait`, `--async`, or `--poll-interval` flags for long-running operations so agents can manage time budgets instead of hanging.",
+		},
+	}
+}
+
+var longRunningCommandNames = regexp.MustCompile(`^(deploy|build|sync|migrate|import|export|apply|provision|install|upgrade|backup|restore|publish|push)$`)
+var asyncFlagNames = []string{"wait", "async", "no-wait", "poll-interval", "watch", "detach", "background"}
+var asyncHelpTerms = []string{"--wait", "--async", "--no-wait", "--poll-interval", "long-running", "in the background", "asynchronous"}
+
+func (c *checkPV6) Run(ctx context.Context, input *Input) *Result {
+	idx := input.GetIndex()
+	if idx == nil {
+		return SkipResult(c, "no command tree available")
+	}
+
+	var longRunning []*discovery.Command
+	for _, cmd := range idx.All() {
+		if longRunningCommandNames.MatchString(strings.ToLower(cmd.Name)) {
+			longRunning = append(longRunning, cmd)
+		}
+	}
+
+	if len(longRunning) == 0 {
+		return PassResult(c, "no long-running commands detected")
+	}
+
+	if idx.HasFlag(asyncFlagNames...) {
+		return PassResult(c, "found async/wait flag for long-running operations")
+	}
+
+	if _, ok := idx.HelpContainsAny(asyncHelpTerms...); ok {
+		return PassResult(c, "found async/wait reference in help text")
+	}
+
+	// Check for status/watch subcommands
+	for _, name := range []string{"status", "watch", "wait"} {
+		if cmds := idx.CommandsByName(name); len(cmds) > 0 {
+			return PassResult(c, fmt.Sprintf("found %q subcommand for monitoring long-running operations", name))
+		}
+	}
+
+	names := make([]string, len(longRunning))
+	for i, cmd := range longRunning {
+		names[i] = strings.Join(cmd.FullPath, " ")
+	}
+	return FailResult(c, fmt.Sprintf("long-running commands found but no async/wait support: %s", strings.Join(names, ", ")))
+}

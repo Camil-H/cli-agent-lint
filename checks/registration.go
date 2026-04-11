@@ -46,4 +46,5 @@ func registerPredictabilityChecks(r *Registry) {
 	r.Register(newCheckPV3()) // Deterministic output
 	r.Register(newCheckPV4()) // Distinct exit codes for error classes
 	r.Register(newCheckPV5()) // Reports actual effects
+	r.Register(newCheckPV6()) // Long-running operation support
 }
