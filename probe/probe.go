@@ -208,7 +208,13 @@ func (p *Prober) Run(ctx context.Context, opts Opts) (*Result, error) {
 	cmd.Env = p.buildEnv(opts.Env)
 
 	start := time.Now()
-	err := cmd.Run()
+	if err := cmd.Start(); err != nil {
+		bufPool.Put(stdoutBuf)
+		bufPool.Put(stderrBuf)
+		return nil, fmt.Errorf("start %s: %w", p.targetPath, err)
+	}
+	applyResourceLimits(cmd.Process.Pid)
+	err := cmd.Wait()
 	duration := time.Since(start)
 
 	// Copy buffer contents before returning them to the pool.
