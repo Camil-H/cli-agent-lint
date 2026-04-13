@@ -22,29 +22,69 @@ var bufPool = sync.Pool{
 const maxOutputBytes = 10 * 1024 * 1024
 
 var sensitiveEnvPrefixes = []string{
+	// Cloud providers
 	"AWS_SECRET",
 	"AWS_SESSION_TOKEN",
+	"GOOGLE_APPLICATION_CREDENTIALS",
+	"AZURE_CLIENT_SECRET",
+	"AZURE_TENANT_ID",
+	"AZURE_SUBSCRIPTION_ID",
+
+	// Source control & CI
 	"GITHUB_TOKEN",
 	"GH_TOKEN",
+	"GH_ENTERPRISE_TOKEN",
 	"GITLAB_TOKEN",
+	"BITBUCKET_TOKEN",
+	"CODECOV_TOKEN",
+	"SONAR_TOKEN",
+	"SNYK_TOKEN",
+	"CIRCLECI_TOKEN",
+
+	// Container & package registries
 	"DOCKER_PASSWORD",
 	"DOCKER_AUTH",
 	"NPM_TOKEN",
 	"NUGET_API_KEY",
 	"PYPI_TOKEN",
+	"PIP_PASSWORD",
 	"RUBYGEMS_API_KEY",
-	"CODECOV_TOKEN",
-	"SONAR_TOKEN",
-	"SNYK_TOKEN",
+	"CARGO_REGISTRY_TOKEN",
+
+	// Infrastructure & secrets management
+	"VAULT_TOKEN",
+	"VAULT_SECRET",
+	"KUBECONFIG",
+
+	// SSH
+	"SSH_AUTH_SOCK",
+	"SSH_AGENT_PID",
+
+	// AI services
+	"OPENAI_API_KEY",
+	"ANTHROPIC_API_KEY",
+	"GEMINI_API_KEY",
+	"GOOGLE_AI_API_KEY",
+	"DEEPSEEK_API_KEY",
+	"COHERE_API_KEY",
+	"REPLICATE_API_TOKEN",
+
+	// Messaging & SaaS
 	"SENTRY_AUTH_TOKEN",
 	"SLACK_TOKEN",
 	"SLACK_WEBHOOK",
 	"TWILIO_AUTH_TOKEN",
 	"SENDGRID_API_KEY",
 	"STRIPE_SECRET",
+
+	// Databases
 	"DATABASE_PASSWORD",
+	"DATABASE_URL",
 	"DB_PASSWORD",
 	"REDIS_PASSWORD",
+	"MONGO_PASSWORD",
+	"PGPASSWORD",
+	"MYSQL_PWD",
 }
 
 var sensitiveEnvSubstrings = []string{
@@ -54,6 +94,7 @@ var sensitiveEnvSubstrings = []string{
 	"_CREDENTIALS",
 	"_API_KEY",
 	"_TOKEN",
+	"_AUTH",
 }
 
 func isSensitiveEnvVar(name string) bool {
