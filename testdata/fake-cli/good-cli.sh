@@ -38,8 +38,9 @@ CMD="${ARGS[0]:-help}"
 
 emit_error() {
   local msg="$1"
+  local escaped="${msg//\"/\\\"}"
   if [[ "$OUTPUT_FORMAT" == "json" ]]; then
-    echo "{\"error\":\"$msg\",\"message\":\"$msg\"}" >&2
+    echo "{\"error\":\"$escaped\",\"message\":\"$escaped\"}" >&2
   else
     echo "Error: $msg" >&2
   fi
