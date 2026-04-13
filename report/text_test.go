@@ -221,11 +221,27 @@ func TestTextFormat_GradeInOutput(t *testing.T) {
 }
 
 func TestStripANSI(t *testing.T) {
-	input := "\x1b[31mred text\x1b[0m and \x1b[1;32mgreen bold\x1b[0m"
-	got := stripANSI(input)
-	want := "red text and green bold"
-	if got != want {
-		t.Errorf("stripANSI() = %q, want %q", got, want)
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{"CSI colors", "\x1b[31mred\x1b[0m", "red"},
+		{"CSI bold+color", "\x1b[1;32mbold green\x1b[0m", "bold green"},
+		{"OSC terminal title", "\x1b]0;evil title\x07safe text", "safe text"},
+		{"OSC hyperlink", "\x1b]8;;http://evil.com\x07click\x1b]8;;\x07", "click"},
+		{"DCS sequence", "\x1b Pdevice control\x1b\\visible", "\x1b Pdevice control\x1b\\visible"},
+		{"mixed", "\x1b[31m\x1b]0;title\x07text\x1b[0m", "text"},
+		{"no escapes", "plain text", "plain text"},
+		{"empty", "", ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := stripANSI(tt.input)
+			if got != tt.want {
+				t.Errorf("stripANSI() = %q, want %q", got, tt.want)
+			}
+		})
 	}
 }
 

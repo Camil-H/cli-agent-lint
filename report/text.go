@@ -10,7 +10,14 @@ import (
 	"github.com/Camil-H/cli-agent-lint/checks"
 )
 
-var ansiRe = regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`)
+var ansiRe = regexp.MustCompile(
+	`\x1b\[[0-9;:]*[a-zA-Z]` + // CSI sequences (colors, cursor movement)
+		`|\x1b\][^\x07]*\x07` + // OSC sequences (terminal title, hyperlinks, clipboard)
+		`|\x1bP[^\x1b]*\x1b\\` + // DCS sequences (device control)
+		`|\x1b[()][0-9A-B]` + // Character set selection
+		`|\x1b[>=<~]` + // Keypad/cursor modes
+		`|\x1b\[[\?]?[0-9;]*[hlmsuJKHf]`, // Private mode set/reset and other CSI
+)
 
 func stripANSI(s string) string {
 	return ansiRe.ReplaceAllString(s, "")
