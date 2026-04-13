@@ -189,8 +189,10 @@ func (p *Prober) Run(ctx context.Context, opts Opts) (*Result, error) {
 
 	cmd := exec.CommandContext(ctx, p.targetPath, opts.Args...)
 
-	// Set process group so we can kill the whole group on timeout.
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid:  true,            // Kill the whole process group on timeout.
+		Pdeathsig: syscall.SIGKILL, // Kill child if the process dies.
+	}
 
 	if opts.Stdin != nil {
 		cmd.Stdin = opts.Stdin
