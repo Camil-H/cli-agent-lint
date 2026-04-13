@@ -40,9 +40,13 @@ cli-agent-lint checks <check-id>
 - `--skip <id>` — skip specific checks (repeatable)
 - `--timeout <duration>` — probe timeout (default 5s)
 
+## Security
+
+Active checks (default) execute the target CLI as a subprocess. Use `--no-probe` when auditing untrusted CLIs to restrict to passive help-text analysis only. Sensitive environment variables (tokens, secrets, API keys) are stripped before execution, but the target can still make network requests and read local files.
+
 ## Interpreting results
 
-The JSON report contains a `score` object with `earned`, `total`, `percentage`, and `grade` (A-F). Each check in the `checks` array has `id`, `status` (pass/fail/warn/skip), `severity`, and `recommendation`.
+The JSON report contains a `score` object with `percentage` and `grade` (A-F). Each check in the `checks` array has `id`, `status` (pass/fail/warn/skip), `severity`, and `recommendation`.
 
 ## Conventions
 

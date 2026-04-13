@@ -54,6 +54,10 @@ Every check targets a specific property that matters when an AI agent drives a C
 - **Passive** — analyzes `--help` text only; always safe, zero side-effects.
 - **Active** — executes the target CLI with crafted input. Disable with `--no-probe`.
 
+### Security note
+
+Active checks execute the target CLI as a subprocess. The tool sanitizes sensitive environment variables and enforces resource limits, but a target CLI can still make network requests, read local files, or behave differently when probed. **Use `--no-probe` when auditing untrusted CLIs.** For full isolation, run in a container.
+
 ## Grading
 
 | Grade | Score | Meaning |
