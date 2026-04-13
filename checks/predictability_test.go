@@ -537,3 +537,21 @@ func TestPV6_SkipNilTree(t *testing.T) {
 		t.Errorf("expected skip, got %s", result.Status)
 	}
 }
+
+// Active execution tests
+
+func TestPV3_Active_GoodCLI(t *testing.T) {
+	input := probeInput(t, "good-cli.sh")
+	result := newCheckPV3().Run(context.Background(), input)
+	if result.Status != StatusPass {
+		t.Errorf("expected pass, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestPV3_Active_BadCLI(t *testing.T) {
+	input := probeInput(t, "bad-cli.sh")
+	result := newCheckPV3().Run(context.Background(), input)
+	if result.Status != StatusPass {
+		t.Errorf("expected pass (bad-cli help is still deterministic), got %s: %s", result.Status, result.Detail)
+	}
+}

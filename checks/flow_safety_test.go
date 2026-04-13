@@ -665,3 +665,53 @@ func TestFS6_Metadata(t *testing.T) {
 		}
 	})
 }
+
+// Active execution tests
+
+func TestFS1_Active_GoodCLI(t *testing.T) {
+	input := probeInput(t, "good-cli.sh")
+	result := newCheckFS1().Run(context.Background(), input)
+	if result.Status != StatusPass {
+		t.Errorf("expected pass, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestFS1_Active_BadCLI(t *testing.T) {
+	input := probeInput(t, "bad-cli.sh")
+	result := newCheckFS1().Run(context.Background(), input)
+	if result.Status != StatusFail {
+		t.Errorf("expected fail (error on stdout), got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestFS2_Active_GoodCLI(t *testing.T) {
+	input := probeInput(t, "good-cli.sh")
+	result := newCheckFS2().Run(context.Background(), input)
+	if result.Status != StatusPass {
+		t.Errorf("expected pass, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestFS2_Active_BadCLI(t *testing.T) {
+	input := probeInput(t, "bad-cli.sh")
+	result := newCheckFS2().Run(context.Background(), input)
+	if result.Status != StatusFail {
+		t.Errorf("expected fail (ANSI in piped output), got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestFS6_Active_GoodCLI(t *testing.T) {
+	input := probeInput(t, "good-cli.sh")
+	result := newCheckFS6().Run(context.Background(), input)
+	if result.Status != StatusPass {
+		t.Errorf("expected pass, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestFS6_Active_BadCLI(t *testing.T) {
+	input := probeInput(t, "bad-cli.sh")
+	result := newCheckFS6().Run(context.Background(), input)
+	if result.Status != StatusFail {
+		t.Errorf("expected fail (exit 0 on error), got %s: %s", result.Status, result.Detail)
+	}
+}

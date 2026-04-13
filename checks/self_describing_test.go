@@ -684,3 +684,62 @@ func TestSD8_SkipNilTree(t *testing.T) {
 		t.Errorf("expected skip, got %s", result.Status)
 	}
 }
+
+// Active execution tests
+
+func TestSD1_Active_GoodCLI(t *testing.T) {
+	input := probeInput(t, "good-cli.sh")
+	te1Result := newCheckTE1().Run(context.Background(), input)
+	input.ResultSet.Set("TE-1", te1Result)
+	if te1Result.Status != StatusPass {
+		t.Fatalf("TE-1 must pass first, got %s: %s", te1Result.Status, te1Result.Detail)
+	}
+
+	result := newCheckSD1().Run(context.Background(), input)
+	if result.Status != StatusPass {
+		t.Errorf("expected pass, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSD1_Active_BadCLI(t *testing.T) {
+	input := probeInput(t, "bad-cli.sh")
+	te1Result := newCheckTE1().Run(context.Background(), input)
+	input.ResultSet.Set("TE-1", te1Result)
+
+	result := newCheckSD1().Run(context.Background(), input)
+	if result.Status != StatusSkip {
+		t.Errorf("expected skip (TE-1 not passed), got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSD2_Active_GoodCLI(t *testing.T) {
+	input := probeInput(t, "good-cli.sh")
+	result := newCheckSD2().Run(context.Background(), input)
+	if result.Status != StatusPass {
+		t.Errorf("expected pass, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSD2_Active_BadCLI(t *testing.T) {
+	input := probeInput(t, "bad-cli.sh")
+	result := newCheckSD2().Run(context.Background(), input)
+	if result.Status != StatusFail {
+		t.Errorf("expected fail (decorated version), got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSD7_Active_GoodCLI(t *testing.T) {
+	input := probeInput(t, "good-cli.sh")
+	result := newCheckSD7().Run(context.Background(), input)
+	if result.Status != StatusPass {
+		t.Errorf("expected pass, got %s: %s", result.Status, result.Detail)
+	}
+}
+
+func TestSD7_Active_BadCLI(t *testing.T) {
+	input := probeInput(t, "bad-cli.sh")
+	result := newCheckSD7().Run(context.Background(), input)
+	if result.Status != StatusFail {
+		t.Errorf("expected fail (no actionable guidance), got %s: %s", result.Status, result.Detail)
+	}
+}
