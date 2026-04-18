@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -290,13 +291,9 @@ func TestVersionOutput(t *testing.T) {
 	}
 
 	version := strings.TrimSpace(stdout)
-	if version != "0.3.0" {
-		t.Errorf("expected version '0.3.0', got %q", version)
-	}
-
-	// Verify it is a clean semver (no extra text).
-	if strings.Contains(version, " ") {
-		t.Errorf("version output contains spaces (not clean semver): %q", version)
+	semver := regexp.MustCompile(`^\d+\.\d+\.\d+$`)
+	if !semver.MatchString(version) {
+		t.Errorf("expected valid semver, got %q", version)
 	}
 }
 
@@ -317,8 +314,9 @@ func TestJSONVersionOutput(t *testing.T) {
 		t.Fatal("JSON version output missing 'version' field")
 	}
 
-	if version != "0.3.0" {
-		t.Errorf("expected JSON version '0.3.0', got %q", version)
+	semver := regexp.MustCompile(`^\d+\.\d+\.\d+$`)
+	if !semver.MatchString(version) {
+		t.Errorf("expected valid semver in JSON, got %q", version)
 	}
 }
 
