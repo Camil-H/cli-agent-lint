@@ -15,7 +15,12 @@ builds:
       - CGO_ENABLED=0
 
 archives:
-  - format: '{{ if eq .Os "windows" }}zip{{ else }}tar.gz{{ end }}'
+  - formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
 checksum:
