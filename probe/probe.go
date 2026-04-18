@@ -10,7 +10,6 @@ import (
 	"os/exec"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 )
 
@@ -228,7 +227,7 @@ func (p *Prober) Run(ctx context.Context, opts Opts) (*Result, error) {
 	if ctx.Err() == context.DeadlineExceeded {
 		result.TimedOut = true
 		if cmd.Process != nil {
-			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL); err != nil && err != syscall.ESRCH {
+			if err := killProcessGroup(cmd.Process.Pid); err != nil {
 				return result, fmt.Errorf("kill process group %d: %w", cmd.Process.Pid, err)
 			}
 		}

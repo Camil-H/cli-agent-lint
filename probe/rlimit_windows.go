@@ -1,4 +1,4 @@
-//go:build !linux && !windows
+//go:build windows
 
 package probe
 
