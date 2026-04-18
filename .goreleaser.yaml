@@ -45,8 +45,6 @@ homebrew_casks:
       - cli-agent-lint
     generate_completions_from_executable:
       executable: "bin/cli-agent-lint"
-      args:
-        - completion
       shell_parameter_format: cobra
       shells:
         - bash
