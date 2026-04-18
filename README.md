@@ -14,9 +14,26 @@ Audit CLI tools for AI agent-readiness. Runs 34 checks across 5 categories and p
 
 ## Install
 
+**Homebrew** (macOS)
+
+```bash
+brew install Camil-H/tap/cli-agent-lint
+```
+
+**Debian / Ubuntu** (.deb from GitHub Releases)
+
+```bash
+curl -LO https://github.com/Camil-H/cli-agent-lint/releases/latest/download/cli-agent-lint_linux_amd64.deb
+sudo dpkg -i cli-agent-lint_linux_amd64.deb
+```
+
+**Go**
+
 ```bash
 go install github.com/Camil-H/cli-agent-lint@latest
 ```
+
+**Binary** — download from [GitHub Releases](https://github.com/Camil-H/cli-agent-lint/releases).
 
 ## Quick start
 

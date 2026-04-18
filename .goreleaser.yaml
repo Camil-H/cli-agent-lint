@@ -1,0 +1,73 @@
+version: 2
+
+builds:
+  - binary: cli-agent-lint
+    ldflags:
+      - -s -w -X github.com/Camil-H/cli-agent-lint/cmd.Version={{.Version}}
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+
+archives:
+  - format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+homebrew_casks:
+  - repository:
+      owner: Camil-H
+      name: homebrew-tap
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+    homepage: "https://github.com/Camil-H/cli-agent-lint"
+    description: "Audit CLI tools for AI agent-readiness"
+    binaries:
+      - cli-agent-lint
+    generate_completions_from_executable:
+      executable: "bin/cli-agent-lint"
+      args:
+        - completion
+      shell_parameter_format: cobra
+      shells:
+        - bash
+        - zsh
+        - fish
+
+nfpms:
+  - maintainer: "Camil-H <Camil-H@users.noreply.github.com>"
+    description: "Audit CLI tools for AI agent-readiness"
+    homepage: "https://github.com/Camil-H/cli-agent-lint"
+    license: "MIT"
+    formats:
+      - deb
+      - rpm
+    bindir: /usr/bin
+    section: utils
+    priority: optional
+    vendor: "Camil-H"
+    deb:
+      lintian_overrides:
+        - statically-linked-binary
+        - changelog-file-missing-in-native-package
+      compression: gzip
+    rpm:
+      group: "Development/Tools"
+      compression: lzma
